@@ -1,6 +1,7 @@
 mod aws;
 mod cache;
 mod open;
+mod save;
 mod stub;
 
 use std::sync::{Mutex, MutexGuard};
@@ -15,7 +16,7 @@ use url::Url;
 
 pub struct CloudPlugin {
     cache: Mutex<cache::Cache>,
-    rt: Runtime,
+    pub(crate) rt: Runtime,
 }
 
 impl Default for CloudPlugin {
@@ -52,7 +53,11 @@ impl Plugin for CloudPlugin {
     }
 
     fn commands(&self) -> Vec<Box<dyn nu_plugin::PluginCommand<Plugin = Self>>> {
-        vec![Box::new(stub::Stub), Box::new(open::Open)]
+        vec![
+            Box::new(stub::Stub),
+            Box::new(open::Open),
+            Box::new(save::Save),
+        ]
     }
 }
 
