@@ -1,3 +1,4 @@
+mod aws;
 mod cache;
 mod open;
 mod stub;

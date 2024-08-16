@@ -103,7 +103,12 @@ fn command(
     let signals = Signals::new(Arc::new(AtomicBool::new(false)));
 
     let stream = PipelineData::ByteStream(
-        ByteStream::read(bytes.reader(), call_span, signals.clone(), ByteStreamType::Unknown),
+        ByteStream::read(
+            bytes.reader(),
+            call_span,
+            signals.clone(),
+            ByteStreamType::Unknown,
+        ),
         Some(PipelineMetadata {
             data_source: DataSource::FilePath(path.to_path_buf()),
             content_type,
