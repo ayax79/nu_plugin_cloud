@@ -110,6 +110,9 @@ fn command(
         }),
     );
 
+    // since we actually found content, turn off plugin GC so the cache works
+    engine.set_gc_disabled(true)?;
+
     match converter {
         Some(converter_id) => {
             debug!("converter id: {converter_id}");
