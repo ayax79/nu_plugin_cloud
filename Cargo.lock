@@ -2615,6 +2615,7 @@ dependencies = [
  "aws-credential-types",
  "bytes",
  "env_logger",
+ "futures",
  "log",
  "mime_guess",
  "nu-command",

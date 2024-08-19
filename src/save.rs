@@ -86,19 +86,16 @@ fn command(
                     bytestream_to_cloud(plugin, source, &signals, &url, call_span)?;
                 }
                 ByteStreamSource::Child(mut child) => {
-                    match child.stdout.take() {
-                        Some(stdout) => {
-                            let res = match stdout {
-                                ChildPipe::Pipe(pipe) => {
-                                    bytestream_to_cloud(plugin, pipe, &signals, &url, call_span)
-                                }
-                                ChildPipe::Tee(tee) => {
-                                    bytestream_to_cloud(plugin, tee, &signals, &url, call_span)
-                                }
-                            };
-                            res?;
-                        }
-                        _ => {}
+                    if let Some(stdout) = child.stdout.take() {
+                        let res = match stdout {
+                            ChildPipe::Pipe(pipe) => {
+                                bytestream_to_cloud(plugin, pipe, &signals, &url, call_span)
+                            }
+                            ChildPipe::Tee(tee) => {
+                                bytestream_to_cloud(plugin, tee, &signals, &url, call_span)
+                            }
+                        };
+                        res?;
                     };
                 }
             }

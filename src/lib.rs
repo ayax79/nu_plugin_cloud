@@ -1,5 +1,6 @@
 mod aws;
 mod cache;
+mod ls;
 mod open;
 mod save;
 mod stub;
@@ -54,9 +55,10 @@ impl Plugin for CloudPlugin {
 
     fn commands(&self) -> Vec<Box<dyn nu_plugin::PluginCommand<Plugin = Self>>> {
         vec![
-            Box::new(stub::Stub),
+            Box::new(ls::Ls),
             Box::new(open::Open),
             Box::new(save::Save),
+            Box::new(stub::Stub),
         ]
     }
 }
