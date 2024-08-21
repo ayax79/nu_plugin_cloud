@@ -1,0 +1,75 @@
+use std::{path::PathBuf, str::FromStr};
+
+use nu_plugin::{EngineInterface, PluginCommand};
+use nu_protocol::{
+    Category, LabeledError, PipelineData, ShellError, Signature, Spanned, SyntaxShape, Type,
+};
+use url::Url;
+
+use crate::CloudPlugin;
+
+pub struct Remove;
+
+impl PluginCommand for Remove {
+    type Plugin = CloudPlugin;
+
+    fn name(&self) -> &str {
+        "cloud rm"
+    }
+
+    fn signature(&self) -> nu_protocol::Signature {
+        Signature::build("cloud rm")
+            .input_output_types(vec![(Type::Any, Type::Nothing)])
+            .required("uri", SyntaxShape::String, "The file url to use.")
+            .category(Category::FileSystem)
+    }
+
+    fn usage(&self) -> &str {
+        "Remove a file from cloud sotrage"
+    }
+
+    fn run(
+        &self,
+        plugin: &Self::Plugin,
+        _engine: &EngineInterface,
+        call: &nu_plugin::EvaluatedCall,
+        _input: PipelineData,
+    ) -> Result<PipelineData, LabeledError> {
+        plugin
+            .rt
+            .block_on(command(call))
+            .map_err(LabeledError::from)
+    }
+}
+
+async fn command(call: &nu_plugin::EvaluatedCall) -> Result<PipelineData, ShellError> {
+    let call_span = call.head;
+    let url_path: Spanned<PathBuf> = call.req(0)?;
+    let url = url_path
+        .item
+        .to_str()
+        .expect("The path should already be unicode")
+        .to_string();
+    let url = Spanned {
+        item: Url::from_str(&url).map_err(|e| ShellError::IncorrectValue {
+            msg: format!("Invalid Url: {e}"),
+            val_span: url_path.span,
+            call_span,
+        })?,
+        span: url_path.span,
+    };
+    let (object_store, path) = crate::providers::parse_url(&url, call_span).await?;
+
+    object_store
+        .delete(&path)
+        .await
+        .map_err(|e| ShellError::GenericError {
+            error: format!("Could not delete delete from cloud storage: {}", e),
+            msg: "".into(),
+            span: Some(call_span),
+            help: None,
+            inner: vec![],
+        })?;
+
+    Ok(PipelineData::empty())
+}
