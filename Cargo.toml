@@ -11,9 +11,9 @@ env_logger = "0.11"
 futures = "0.3"
 log = "0.4"
 mime_guess = "2.0.5"
-nu-command = { version = "0.96", features = ["plugin"] }
-nu-plugin = "0.96"
-nu-protocol = { version = "0.96", features = ["plugin"] }
+nu-command = { version = "0.97", features = ["plugin"] }
+nu-plugin = "0.97"
+nu-protocol = { version = "0.97", features = ["plugin"] }
 object_store = { version = "0.11", features = ["aws"] }
 tokio = { version = "1.39.2", features = ["full"] }
 url = "2.5.2"
