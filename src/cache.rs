@@ -8,7 +8,7 @@ use nu_protocol::{ShellError, Span, Spanned};
 use object_store::{path::Path, Error as ObjectStoreError, GetOptions, ObjectStore};
 use url::Url;
 
-use crate::parse_url;
+use crate::providers::parse_url;
 
 pub struct CacheEntry {
     path: Path,
