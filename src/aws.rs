@@ -1,3 +1,5 @@
+use std::error::Error;
+
 use aws_config::{BehaviorVersion, SdkConfig};
 use aws_credential_types::{provider::ProvideCredentials, Credentials};
 use nu_protocol::ShellError;
@@ -21,6 +23,12 @@ pub async fn options() -> Result<Vec<(String, String)>, ShellError> {
             AmazonS3ConfigKey::SecretAccessKey.as_ref().to_string(),
             credentials.secret_access_key().to_string(),
         ));
+        if let Some(token) = credentials.session_token() {
+            options.push((
+                AmazonS3ConfigKey::Token.as_ref().to_string(),
+                token.to_string(),
+            ))
+        }
     }
 
     Ok(options)
@@ -34,7 +42,13 @@ async fn aws_creds(aws_config: &SdkConfig) -> Result<Option<Credentials>, ShellE
     if let Some(provider) = aws_config.credentials_provider() {
         Ok(Some(provider.provide_credentials().await.map_err(|e| {
             ShellError::GenericError {
-                error: format!("Could not fetch AWS credentials: {e}"),
+                error: format!(
+                    "Could not fetch AWS credentials: {} - {}",
+                    e,
+                    e.source()
+                        .map(|e| format!("{}", e))
+                        .unwrap_or("".to_string())
+                ),
                 msg: "".into(),
                 span: None,
                 help: None,
