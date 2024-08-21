@@ -2,6 +2,7 @@ mod aws;
 mod cache;
 mod ls;
 mod open;
+mod rm;
 mod save;
 mod stub;
 
@@ -57,6 +58,7 @@ impl Plugin for CloudPlugin {
         vec![
             Box::new(ls::Ls),
             Box::new(open::Open),
+            Box::new(rm::Remove),
             Box::new(save::Save),
             Box::new(stub::Stub),
         ]
