@@ -1,11 +1,12 @@
-use std::{path::PathBuf, str::FromStr};
+use std::{path::PathBuf, str::FromStr, vec};
 
 use bytes::Buf;
 use log::debug;
 use nu_plugin::{EngineInterface, PluginCommand};
 use nu_protocol::{
-    ByteStream, ByteStreamType, Category, DataSource, IntoInterruptiblePipelineData, LabeledError,
-    PipelineData, PipelineMetadata, ShellError, Signature, Spanned, SyntaxShape, Type,
+    ByteStream, ByteStreamType, Category, DataSource, Example, IntoInterruptiblePipelineData,
+    LabeledError, PipelineData, PipelineMetadata, ShellError, Signature, Spanned, SyntaxShape,
+    Type,
 };
 use url::Url;
 
@@ -30,6 +31,14 @@ impl PluginCommand for Open {
 
     fn usage(&self) -> &str {
         "Load a file into a cell, converting to table if possible (avoid by appending '--raw')."
+    }
+
+    fn examples(&self) -> Vec<Example> {
+        vec![Example {
+            description: "Load a file from s3.",
+            example: "cloud open s3://mybucket/file.txt",
+            result: None,
+        }]
     }
 
     fn run(

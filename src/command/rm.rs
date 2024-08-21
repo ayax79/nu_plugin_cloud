@@ -1,8 +1,9 @@
-use std::{path::PathBuf, str::FromStr};
+use std::{path::PathBuf, str::FromStr, vec};
 
 use nu_plugin::{EngineInterface, PluginCommand};
 use nu_protocol::{
-    Category, LabeledError, PipelineData, ShellError, Signature, Spanned, SyntaxShape, Type,
+    Category, Example, LabeledError, PipelineData, ShellError, Signature, Spanned, SyntaxShape,
+    Type,
 };
 use url::Url;
 
@@ -26,6 +27,14 @@ impl PluginCommand for Remove {
 
     fn usage(&self) -> &str {
         "Remove a file from cloud sotrage"
+    }
+
+    fn examples(&self) -> Vec<Example> {
+        vec![Example {
+            description: "Remove a file from s3.",
+            example: "cloud rm s3://mybucket/file.txt",
+            result: None,
+        }]
     }
 
     fn run(

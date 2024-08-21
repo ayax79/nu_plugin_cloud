@@ -1,10 +1,10 @@
-use std::{path::PathBuf, str::FromStr};
+use std::{path::PathBuf, str::FromStr, vec};
 
 use futures::StreamExt;
 use nu_plugin::{EngineInterface, EvaluatedCall, PluginCommand};
 use nu_protocol::{
-    record, Category, LabeledError, PipelineData, ShellError, Signature, Spanned, SyntaxShape,
-    Type, Value,
+    record, Category, Example, LabeledError, PipelineData, ShellError, Signature, Spanned,
+    SyntaxShape, Type, Value,
 };
 use url::Url;
 
@@ -27,7 +27,15 @@ impl PluginCommand for Ls {
     }
 
     fn usage(&self) -> &str {
-        "List the filenames, sizes, and modification times of items in a directory."
+        "List the filenames, sizes, modificationtime , etags, and versions of a cloud location."
+    }
+
+    fn examples(&self) -> Vec<Example> {
+        vec![Example {
+            description: "List the files in a s3 bucket.",
+            example: "cloud ls s3://mybucket",
+            result: None,
+        }]
     }
 
     fn run(
