@@ -5,10 +5,10 @@ use std::{
 
 use bytes::Bytes;
 use nu_protocol::{ShellError, Span, Spanned};
-use object_store::{path::Path, Error as ObjectStoreError, GetOptions, ObjectStore};
+use object_store::{path::Path, GetOptions};
 use url::Url;
 
-use crate::providers::parse_url;
+use crate::providers::{parse_url, NuObjectStore};
 
 pub struct CacheEntry {
     path: Path,
@@ -20,7 +20,7 @@ pub struct CacheEntry {
     refreshed_at: Instant,
     /// Object store used for this file.
     /// todo: ideally there would be a way to reuse this for multiple paths in a generic way
-    store: Box<dyn ObjectStore>,
+    store: NuObjectStore,
 }
 
 /// Example cache that checks entries after 10 seconds for a new version
@@ -40,9 +40,9 @@ impl Cache {
                         if_none_match: Some(e.e_tag.clone()),
                         ..GetOptions::default()
                     };
-                    match e.store.get_opts(&e.path, opts).await {
+                    match e.store.object_store().get_opts(&e.path, opts).await {
                         Ok(d) => e.data = d.bytes().await.map_err(cache_get_error)?,
-                        Err(ObjectStoreError::NotModified { .. }) => {} // Data has not changed
+                        Err(object_store::Error::NotModified { .. }) => {} // Data has not changed
                         Err(e) => return Err(cache_get_error(e)),
                     }
                     e.refreshed_at = Instant::now();
@@ -52,7 +52,11 @@ impl Cache {
             None => {
                 // Not cached, fetch data
                 let (store, path) = parse_url(url, span).await?;
-                let get = store.get(&path).await.map_err(cache_get_error)?;
+                let get = store
+                    .object_store()
+                    .get(&path)
+                    .await
+                    .map_err(cache_get_error)?;
                 let e_tag = get.meta.e_tag.clone();
                 let data = get.bytes().await.map_err(cache_get_error)?;
                 if let Some(e_tag) = e_tag {

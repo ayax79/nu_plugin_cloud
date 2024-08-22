@@ -80,7 +80,7 @@ fn command(
         span: url_path.span,
     };
 
-    match input {
+    let result = match input {
         PipelineData::ByteStream(stream, _metadata) => {
             debug!("Handling byte stream");
 
@@ -123,7 +123,17 @@ fn command(
 
             Ok(PipelineData::empty())
         }
+    };
+
+    match result {
+        Ok(_) if url.item.scheme() == "memory" => {
+            // turn off plugin GC if memory store is being used
+            engine.set_gc_disabled(true)?;
+        }
+        _ => {}
     }
+
+    result
 }
 
 async fn liststream_to_cloud(
@@ -133,7 +143,11 @@ async fn liststream_to_cloud(
     span: Span,
 ) -> Result<(), ShellError> {
     let (object_store, path) = crate::providers::parse_url(url, span).await?;
-    let upload = object_store.put_multipart(&path).await.unwrap();
+    let upload = object_store
+        .object_store()
+        .put_multipart(&path)
+        .await
+        .unwrap();
     let mut write = WriteMultipart::new(upload);
 
     for v in ls {
@@ -172,7 +186,11 @@ async fn stream_to_cloud_async(
     span: Span,
 ) -> Result<(), ShellError> {
     let (object_store, path) = crate::providers::parse_url(url, span).await?;
-    let upload = object_store.put_multipart(&path).await.unwrap();
+    let upload = object_store
+        .object_store()
+        .put_multipart(&path)
+        .await
+        .unwrap();
     let mut write = WriteMultipart::new(upload);
 
     let _ = generic_copy(source, &mut write, span, signals)?;
@@ -289,6 +307,7 @@ async fn stream_bytes(bytes: Vec<u8>, url: &Spanned<Url>, span: Span) -> Result<
 
     let payload = PutPayload::from_bytes(Bytes::from(bytes));
     object_store
+        .object_store()
         .put(&path, payload)
         .await
         .map_err(|e| ShellError::GenericError {

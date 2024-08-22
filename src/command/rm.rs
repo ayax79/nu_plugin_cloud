@@ -70,6 +70,7 @@ async fn command(call: &nu_plugin::EvaluatedCall) -> Result<PipelineData, ShellE
     let (object_store, path) = crate::providers::parse_url(&url, call_span).await?;
 
     object_store
+        .object_store()
         .delete(&path)
         .await
         .map_err(|e| ShellError::GenericError {

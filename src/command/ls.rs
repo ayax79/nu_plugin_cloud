@@ -70,8 +70,7 @@ async fn command(call: &EvaluatedCall) -> Result<PipelineData, ShellError> {
     };
 
     let (object_store, path) = crate::providers::parse_url(&url, call_span).await?;
-    let object_store = Box::into_pin(object_store);
-    let list_stream = object_store.list(Some(&path));
+    let list_stream = object_store.object_store().list(Some(&path));
 
     let values: Vec<Value> = list_stream
         .map(|v| match v {
