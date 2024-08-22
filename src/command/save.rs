@@ -15,7 +15,7 @@ use nu_protocol::{
 use object_store::{PutPayload, WriteMultipart};
 use url::Url;
 
-use crate::{CloudPlugin, SignalHandler};
+use crate::CloudPlugin;
 
 pub struct Save;
 
@@ -83,23 +83,22 @@ fn command(
     match input {
         PipelineData::ByteStream(stream, _metadata) => {
             debug!("Handling byte stream");
-            let handler = SignalHandler::new(engine)?;
 
             match stream.into_source() {
                 ByteStreamSource::Read(read) => {
-                    bytestream_to_cloud(plugin, read, &handler.into(), &url, call_span)?;
+                    bytestream_to_cloud(plugin, read, engine.signals(), &url, call_span)?;
                 }
                 ByteStreamSource::File(source) => {
-                    bytestream_to_cloud(plugin, source, &handler.into(), &url, call_span)?;
+                    bytestream_to_cloud(plugin, source, engine.signals(), &url, call_span)?;
                 }
                 ByteStreamSource::Child(mut child) => {
                     if let Some(stdout) = child.stdout.take() {
                         let res = match stdout {
                             ChildPipe::Pipe(pipe) => {
-                                bytestream_to_cloud(plugin, pipe, &handler.into(), &url, call_span)
+                                bytestream_to_cloud(plugin, pipe, engine.signals(), &url, call_span)
                             }
                             ChildPipe::Tee(tee) => {
-                                bytestream_to_cloud(plugin, tee, &handler.into(), &url, call_span)
+                                bytestream_to_cloud(plugin, tee, engine.signals(), &url, call_span)
                             }
                         };
                         res?;
@@ -111,10 +110,9 @@ fn command(
         }
         PipelineData::ListStream(ls, _pipeline_metadata) if raw => {
             debug!("Handling list stream");
-            let handler = SignalHandler::new(engine)?;
             plugin
                 .rt
-                .block_on(liststream_to_cloud(ls, &handler.into(), &url, call_span))?;
+                .block_on(liststream_to_cloud(ls, engine.signals(), &url, call_span))?;
             Ok(PipelineData::empty())
         }
         input => {

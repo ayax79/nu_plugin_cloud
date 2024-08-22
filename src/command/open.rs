@@ -10,7 +10,7 @@ use nu_protocol::{
 };
 use url::Url;
 
-use crate::{CloudPlugin, SignalHandler};
+use crate::CloudPlugin;
 
 pub struct Open;
 
@@ -104,12 +104,11 @@ fn command(
         None
     };
 
-    let handler = SignalHandler::new(engine)?;
     let stream = PipelineData::ByteStream(
         ByteStream::read(
             bytes.reader(),
             call_span,
-            handler.clone().into(),
+            engine.signals().clone(),
             ByteStreamType::Unknown,
         ),
         Some(PipelineMetadata {
@@ -128,7 +127,7 @@ fn command(
                 engine.call_decl(converter_id, call.clone(), stream, true, false)?;
             Ok(command_output.into_pipeline_data_with_metadata(
                 call.head,
-                handler.into(),
+                engine.signals().clone(),
                 PipelineMetadata::default()
                     .with_data_source(DataSource::FilePath(path.to_path_buf())),
             ))
