@@ -49,7 +49,7 @@ sso_role_name = my-iam-role
 region = us-east-1
 output = json
 
-[sso-session disqo]
+[sso-session my-sso]
 sso_start_url = https://d-92677e5ab0.awsapps.com/start
 sso_region = us-west-2
 sso_registration_scopes = sso:account:access
