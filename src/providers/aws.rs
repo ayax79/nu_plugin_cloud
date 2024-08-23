@@ -11,7 +11,7 @@ use crate::cache::{Cache, ObjectStoreCacheKey};
 
 use super::NuObjectStore;
 
-pub async fn parse_url(cache: &Cache, url: &Spanned<Url>) -> Result<NuObjectStore, ShellError> {
+pub async fn build_object_store(cache: &Cache, url: &Spanned<Url>) -> Result<NuObjectStore, ShellError> {
     let aws_config = aws_load_config().await;
 
     let parsed_info = parse_url_parts(&url.item);
@@ -51,7 +51,7 @@ pub async fn parse_url(cache: &Cache, url: &Spanned<Url>) -> Result<NuObjectStor
         region: region.clone(),
     };
 
-    if let Some(object_store) = cache.get_store(&cache_key).await? {
+    if let Some(object_store) = cache.get_store(&cache_key).await {
         Ok(object_store)
     } else {
         let builder = AmazonS3Builder::new()
@@ -92,7 +92,7 @@ pub async fn parse_url(cache: &Cache, url: &Spanned<Url>) -> Result<NuObjectStor
             region,
         };
 
-        cache.put_store(cache_key, object_store.clone()).await?;
+        cache.put_store(cache_key, object_store.clone()).await;
         Ok(object_store)
     }
 }

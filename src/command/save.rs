@@ -129,6 +129,7 @@ async fn command(
     match result {
         Ok(_) if url.item.scheme() == "memory" => {
             // turn off plugin GC if memory store is being used
+            debug!("Disabling garbage collection for memory store");
             engine.set_gc_disabled(true)?;
         }
         _ => {}

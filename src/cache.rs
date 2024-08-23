@@ -1,15 +1,13 @@
-use std::{
-    collections::HashMap,
-    time::{Duration, Instant},
-};
-
+use crate::providers::{parse_url, NuObjectStore};
 use async_mutex::{Mutex, MutexGuard};
 use bytes::Bytes;
 use nu_protocol::{ShellError, Span, Spanned};
 use object_store::{path::Path, GetOptions};
+use std::{
+    collections::HashMap,
+    time::{Duration, Instant},
+};
 use url::Url;
-
-use crate::providers::{parse_url, NuObjectStore};
 
 pub struct CacheEntry {
     path: Path,
@@ -26,19 +24,20 @@ pub struct CacheEntry {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ObjectStoreCacheKey {
-    InMemory,
-    FileSystem,
+    Memory,
+    Local,
     AmazonS3 { bucket: String, region: String },
 }
 
-impl From<NuObjectStore> for ObjectStoreCacheKey {
-    fn from(value: NuObjectStore) -> Self {
+impl From<&NuObjectStore> for ObjectStoreCacheKey {
+    fn from(value: &NuObjectStore) -> Self {
         match value {
-            NuObjectStore::Memory(_) => ObjectStoreCacheKey::InMemory,
-            NuObjectStore::Local(_) => ObjectStoreCacheKey::FileSystem,
-            NuObjectStore::AmazonS3 { bucket, region, .. } => {
-                ObjectStoreCacheKey::AmazonS3 { bucket, region }
-            }
+            NuObjectStore::Memory(_) => ObjectStoreCacheKey::Memory,
+            NuObjectStore::Local(_) => ObjectStoreCacheKey::Local,
+            NuObjectStore::AmazonS3 { bucket, region, .. } => ObjectStoreCacheKey::AmazonS3 {
+                bucket: bucket.to_owned(),
+                region: region.to_owned(),
+            },
             NuObjectStore::GoogleCloudStorage(_) => unimplemented!(),
             NuObjectStore::MicrosoftAzure(_) => unimplemented!(),
             NuObjectStore::Http(_) => unimplemented!(),
@@ -99,22 +98,14 @@ impl Cache {
         })
     }
 
-    pub async fn put_store(
-        &self,
-        key: ObjectStoreCacheKey,
-        store: NuObjectStore,
-    ) -> Result<(), ShellError> {
+    pub async fn put_store(&self, key: ObjectStoreCacheKey, store: NuObjectStore) {
         let mut lock = self.stores_cache_lock().await;
         lock.insert(key, store);
-        Ok(())
     }
 
-    pub async fn get_store(
-        &self,
-        key: &ObjectStoreCacheKey,
-    ) -> Result<Option<NuObjectStore>, ShellError> {
+    pub async fn get_store(&self, key: &ObjectStoreCacheKey) -> Option<NuObjectStore> {
         let lock = self.stores_cache_lock().await;
-        Ok(lock.get(key).cloned())
+        lock.get(key).cloned()
     }
 
     async fn entries_cache_lock(&self) -> MutexGuard<HashMap<Url, CacheEntry>> {
