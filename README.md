@@ -27,6 +27,16 @@ plugin add ~/.cargo/bin/nu_plugin_cloud
 plugin use cloud
 ```
 
+> [!TIP]
+> This plugin will turn of plugin GC when any operation happens. 
+
+To turn plugin GC back off and query internal caches, run:
+```nushell
+cloud cache-clear
+```
+
+# AWS Support
+
 ## AWS Setup
 
 Configuration for AWS uses the standard [Configuration and Credential Files](https://docs.aws.amazon.com/cli/v1/userguide/cli-configure-files.html). To change your profile, ensure that the AWS_PROFILE environment variable is set to the desired profile.
@@ -53,4 +63,41 @@ output = json
 sso_start_url = https://d-92677e5ab0.awsapps.com/start
 sso_region = us-west-2
 sso_registration_scopes = sso:account:access
+```
+## Non-Cloud Storage
+
+There are two types of supported non-cloud storage types, in-memory and file system. It can be useful to use these for testing purposes.
+
+### In-Memory Usage
+
+Save a file from memory:
+```nushell
+[[a b]; [1 2]] | cloud save memory:/foo.csv
+```
+
+Load a file from memory:
+```nushell
+cloud open memory:/foo.csv
+```
+
+List files in memory:
+```nushell
+cloud ls memory:/foo.csv
+```
+
+### Filesystem Usage
+
+Save a file from the local filesystem:
+```nushell
+[[a b]; [1 2]] | cloud save file:///tmp/test/foo.csv
+```
+
+Load a file from the local filesystem:
+```nushell
+cloud open file:///tmp/test/foo.csv
+```
+
+List files in the local filesystem:
+```nushell
+cloud ls file:///tmp/test/foo.csv
 ```
