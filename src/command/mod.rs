@@ -17,3 +17,50 @@ pub fn commands() -> Vec<Box<dyn nu_plugin::PluginCommand<Plugin = CloudPlugin>>
         Box::new(stub::Stub),
     ]
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::CloudPlugin;
+    use nu_command::{FromCsv, ToCsv};
+    use nu_plugin_test_support::PluginTest;
+    use nu_protocol::{record, PipelineData, Span, Value};
+
+    #[test]
+    fn test_save_open() -> Result<(), Box<dyn std::error::Error>> {
+        let plugin = CloudPlugin::default();
+        let mut plugin_test = PluginTest::new("polars", plugin.into())?;
+        let _ = plugin_test.add_decl(Box::new(ToCsv))?;
+        let _ = plugin_test.add_decl(Box::new(FromCsv))?;
+        let result = plugin_test.eval_with(
+            "[[a b]; [1 2]] | cloud save memory:/foo.csv | cloud open memory:/foo.csv",
+            PipelineData::Empty,
+        )?;
+        let value = result.into_value(Span::test_data())?;
+        assert_eq!(
+            value,
+            Value::test_list(vec![Value::test_record(record!(
+                "a" => Value::test_int(1),
+                "b" => Value::test_int(2),
+            ))])
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_save_open_raw() -> Result<(), Box<dyn std::error::Error>> {
+        let plugin = CloudPlugin::default();
+        let mut plugin_test = PluginTest::new("polars", plugin.into())?;
+        let _ = plugin_test.add_decl(Box::new(ToCsv))?;
+        let _ = plugin_test.add_decl(Box::new(FromCsv))?;
+        let result = plugin_test.eval_with(
+            "[[a b]; [1 2]] | cloud save memory:/foo.csv | cloud open --raw memory:/foo.csv",
+            PipelineData::Empty,
+        )?;
+        let value = result.into_value(Span::test_data())?;
+        assert_eq!(
+            value,
+            Value::test_string("a,b\n1,2\n")
+        );
+        Ok(())
+    }
+}
