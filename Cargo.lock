@@ -2625,6 +2625,7 @@ dependencies = [
  "bytes",
  "env_logger",
  "futures",
+ "itertools 0.13.0",
  "log",
  "mime_guess",
  "nu-command",

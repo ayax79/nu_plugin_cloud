@@ -58,9 +58,7 @@ pub async fn parse_url(
     })?;
 
     let object_store = match scheme {
-        ObjectStoreScheme::AmazonS3 => {
-            aws::parse_url(cache, url).await?
-        }
+        ObjectStoreScheme::AmazonS3 => aws::parse_url(cache, url).await?,
         ObjectStoreScheme::Local => {
             let store = LocalFileSystem::new();
             NuObjectStore::Local(Arc::new(store))

@@ -10,6 +10,7 @@ aws-credential-types = "1.2"
 bytes = "1.7"
 env_logger = "0.11"
 futures = "0.3"
+itertools = "0.13.0"
 log = "0.4"
 mime_guess = "2.0.5"
 nu-command = { version = "0.97", features = ["plugin"] }

@@ -2,8 +2,9 @@ use std::{error::Error, sync::Arc};
 
 use aws_config::{BehaviorVersion, SdkConfig};
 use aws_credential_types::{provider::ProvideCredentials, Credentials};
+use itertools::Itertools;
 use nu_protocol::{ShellError, Spanned};
-use object_store::aws::{AmazonS3Builder, AmazonS3ConfigKey};
+use object_store::aws::AmazonS3Builder;
 use url::Url;
 
 use crate::cache::{Cache, ObjectStoreCacheKey};
@@ -12,10 +13,12 @@ use super::NuObjectStore;
 
 pub async fn parse_url(cache: &Cache, url: &Spanned<Url>) -> Result<NuObjectStore, ShellError> {
     let aws_config = aws_load_config().await;
-    let builder = AmazonS3Builder::new().with_url(url.item.clone());
 
-    let bucket = builder
-        .get_config_value(&AmazonS3ConfigKey::Bucket)
+    let parsed_info = parse_url_parts(&url.item);
+
+    let bucket = parsed_info
+        .bucket
+        .clone()
         .ok_or_else(|| ShellError::GenericError {
             error: format!(
                 "Could not determine Amazon S3 bucket name from url {}",
@@ -27,8 +30,12 @@ pub async fn parse_url(cache: &Cache, url: &Spanned<Url>) -> Result<NuObjectStor
             inner: vec![],
         })?;
 
-    let (builder, region) = if let Some(region) = aws_config.region() {
-        (builder.with_region(region.to_string()), region.to_string())
+    let region = if let Some(region) = aws_config
+        .region()
+        .map(ToString::to_string)
+        .or(parsed_info.region)
+    {
+        region
     } else {
         return Err(ShellError::GenericError {
             error: "Could not determine AWS region from environment".into(),
@@ -47,6 +54,10 @@ pub async fn parse_url(cache: &Cache, url: &Spanned<Url>) -> Result<NuObjectStor
     if let Some(object_store) = cache.get_store(&cache_key)? {
         Ok(object_store)
     } else {
+        let builder = AmazonS3Builder::new()
+            .with_url(url.item.clone())
+            .with_region(region.clone());
+
         let builder = if let Some(credentials) = aws_creds(&aws_config).await? {
             let builder = builder
                 .with_access_key_id(credentials.access_key_id())
@@ -109,5 +120,54 @@ async fn aws_creds(aws_config: &SdkConfig) -> Result<Option<Credentials>, ShellE
         })?))
     } else {
         Ok(None)
+    }
+}
+
+#[derive(Default)]
+struct ParsedInfo {
+    bucket: Option<String>,
+    region: Option<String>,
+}
+
+// This is borrowed from the iternals of the AmazonS3 builder.
+// Unforunately, neither builder or the object store expose the bucket and region
+// name and they are needed for caching
+fn parse_url_parts(url: &Url) -> ParsedInfo {
+    let host = url.host_str().unwrap_or_default();
+
+    match url.scheme() {
+        "s3" | "s3a" => ParsedInfo {
+            bucket: Some(host.to_string()),
+            region: None,
+        },
+        "https" => match host.splitn(4, '.').collect_tuple() {
+            Some(("s3", region, "amazonaws", "com")) => {
+                let region = Some(region.to_string());
+                let bucket = url.path_segments().into_iter().flatten().next();
+
+                ParsedInfo {
+                    bucket: bucket.map(|s| s.to_string()),
+                    region,
+                }
+            }
+            Some((bucket, "s3", region, "amazonaws.com")) => {
+                let bucket = Some(bucket.to_string());
+                let region = Some(region.to_string());
+
+                ParsedInfo { bucket, region }
+            }
+            Some((_account, "r2", "cloudflarestorage", "com")) => {
+                let region = Some("auto".to_string());
+                let bucket = url
+                    .path_segments()
+                    .into_iter()
+                    .flatten()
+                    .next()
+                    .map(ToString::to_string);
+                ParsedInfo { bucket, region }
+            }
+            _ => ParsedInfo::default(),
+        },
+        _scheme => ParsedInfo::default(),
     }
 }
