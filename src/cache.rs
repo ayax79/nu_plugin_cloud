@@ -108,6 +108,16 @@ impl Cache {
         lock.get(key).cloned()
     }
 
+    pub async fn clear_entries_cache(&self) {
+        let mut lock = self.entries_cache_lock().await;
+        lock.clear();
+    }
+
+    pub async fn clear_store_cache(&self) {
+        let mut lock = self.stores_cache_lock().await;
+        lock.clear();
+    }
+
     async fn entries_cache_lock(&self) -> MutexGuard<HashMap<Url, CacheEntry>> {
         self.entries.lock().await
     }

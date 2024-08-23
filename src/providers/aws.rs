@@ -11,7 +11,10 @@ use crate::cache::{Cache, ObjectStoreCacheKey};
 
 use super::NuObjectStore;
 
-pub async fn build_object_store(cache: &Cache, url: &Spanned<Url>) -> Result<NuObjectStore, ShellError> {
+pub async fn build_object_store(
+    cache: &Cache,
+    url: &Spanned<Url>,
+) -> Result<NuObjectStore, ShellError> {
     let aws_config = aws_load_config().await;
 
     let parsed_info = parse_url_parts(&url.item);
