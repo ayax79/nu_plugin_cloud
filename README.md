@@ -17,9 +17,15 @@ Provides uniform access to cloud storage services for nushell.
 - Install [rustup](https://rustup.rs/)
 - For AWS SSO support, install the [AWS CLI](https://aws.amazon.com/cli/)
 
+### Installation With Cargo
+```nu
+cargo install nu_plugin_cloud
+plugin add ~/.cargo/bin/nu_plugin_cloud
+plugin use cloud
+```
+
 ### Installation From Source
-This will be published on crates.io once it is in a more complete state. For now:
-```nushell
+```nu
 git clone https://github.com/ayax79/nu_plugin_cloud.git
 cd nu_plugin_cloud
 cargo install --path .
@@ -31,7 +37,7 @@ plugin use cloud
 > This plugin will turn of plugin GC when any operation happens. 
 
 To turn plugin GC back off and query internal caches, run:
-```nushell
+```nu
 cloud cache-clear
 ```
 
@@ -71,33 +77,33 @@ There are two types of supported non-cloud storage types, in-memory and file sys
 ### In-Memory Usage
 
 Save a file from memory:
-```nushell
+```nu
 [[a b]; [1 2]] | cloud save memory:/foo.csv
 ```
 
 Load a file from memory:
-```nushell
+```nu
 cloud open memory:/foo.csv
 ```
 
 List files in memory:
-```nushell
+```nu
 cloud ls memory:/foo.csv
 ```
 
 ### Filesystem Usage
 
 Save a file from the local filesystem:
-```nushell
+```nu
 [[a b]; [1 2]] | cloud save file:///tmp/test/foo.csv
 ```
 
 Load a file from the local filesystem:
-```nushell
+```nu
 cloud open file:///tmp/test/foo.csv
 ```
 
 List files in the local filesystem:
-```nushell
+```nu
 cloud ls file:///tmp/test/foo.csv
 ```
