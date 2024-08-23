@@ -1,6 +1,7 @@
 use crate::providers::{parse_url, NuObjectStore};
 use async_mutex::{Mutex, MutexGuard};
 use bytes::Bytes;
+use nu_plugin::EngineInterface;
 use nu_protocol::{ShellError, Span, Spanned};
 use object_store::{path::Path, GetOptions};
 use std::{
@@ -53,7 +54,12 @@ pub struct Cache {
 }
 
 impl Cache {
-    pub async fn get(&self, url: &Spanned<Url>, span: Span) -> Result<Bytes, ShellError> {
+    pub async fn get(
+        &self,
+        engine: &EngineInterface,
+        url: &Spanned<Url>,
+        span: Span,
+    ) -> Result<Bytes, ShellError> {
         let mut lock = self.entries_cache_lock().await;
         Ok(match lock.get_mut(&url.item) {
             Some(e) => match e.refreshed_at.elapsed() < Duration::from_secs(10) {
@@ -75,7 +81,7 @@ impl Cache {
             },
             None => {
                 // Not cached, fetch data
-                let (store, path) = parse_url(self, url, span).await?;
+                let (store, path) = parse_url(engine, self, url, span).await?;
                 let get = store
                     .object_store()
                     .get(&path)
@@ -98,9 +104,15 @@ impl Cache {
         })
     }
 
-    pub async fn put_store(&self, key: ObjectStoreCacheKey, store: NuObjectStore) {
+    pub async fn put_store(
+        &self,
+        engine: &EngineInterface,
+        key: ObjectStoreCacheKey,
+        store: NuObjectStore,
+    ) -> Result<(), ShellError> {
         let mut lock = self.stores_cache_lock().await;
         lock.insert(key, store);
+        engine.set_gc_disabled(true)
     }
 
     pub async fn get_store(&self, key: &ObjectStoreCacheKey) -> Option<NuObjectStore> {
@@ -108,14 +120,12 @@ impl Cache {
         lock.get(key).cloned()
     }
 
-    pub async fn clear_entries_cache(&self) {
+    pub async fn clear(&self, engine: &EngineInterface) -> Result<(), ShellError> {
         let mut lock = self.entries_cache_lock().await;
         lock.clear();
-    }
-
-    pub async fn clear_store_cache(&self) {
         let mut lock = self.stores_cache_lock().await;
         lock.clear();
+        engine.set_gc_disabled(false)
     }
 
     async fn entries_cache_lock(&self) -> MutexGuard<HashMap<Url, CacheEntry>> {

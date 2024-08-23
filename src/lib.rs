@@ -3,7 +3,7 @@ mod command;
 mod providers;
 
 use cache::Cache;
-use nu_plugin::Plugin;
+use nu_plugin::{EngineInterface, Plugin};
 use nu_protocol::{ShellError, Span, Spanned};
 use object_store::path::Path;
 use providers::NuObjectStore;
@@ -27,10 +27,11 @@ impl Default for CloudPlugin {
 impl CloudPlugin {
     pub async fn parse_url(
         &self,
+        engine: &EngineInterface,
         url: &Spanned<Url>,
         span: Span,
     ) -> Result<(NuObjectStore, Path), ShellError> {
-        providers::parse_url(&self.cache, url, span).await
+        providers::parse_url(engine, &self.cache, url, span).await
     }
 }
 

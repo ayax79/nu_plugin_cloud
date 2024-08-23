@@ -47,8 +47,6 @@ async fn command(
     plugin: &CloudPlugin,
     engine: &EngineInterface,
 ) -> Result<PipelineData, ShellError> {
-    plugin.cache.clear_entries_cache().await;
-    plugin.cache.clear_store_cache().await;
-    engine.set_gc_disabled(false)?;
+    plugin.cache.clear(engine).await?;
     Ok(PipelineData::empty())
 }

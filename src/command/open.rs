@@ -78,7 +78,7 @@ async fn command(
         span: spanned_path.span,
     };
 
-    let bytes = plugin.cache.get(&url, call_span).await?;
+    let bytes = plugin.cache.get(engine, &url, call_span).await?;
 
     let content_type = if raw {
         path.extension()
@@ -119,9 +119,6 @@ async fn command(
             content_type,
         }),
     );
-
-    // since we actually found content, turn off plugin GC so the cache works
-    engine.set_gc_disabled(true)?;
 
     match converter {
         Some(converter_id) => {

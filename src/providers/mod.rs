@@ -3,6 +3,7 @@ mod local;
 mod mem;
 
 use crate::cache::Cache;
+use nu_plugin::EngineInterface;
 use nu_protocol::{ShellError, Span, Spanned};
 use object_store::{path::Path, ObjectStore, ObjectStoreScheme};
 use std::sync::Arc;
@@ -38,6 +39,7 @@ impl NuObjectStore {
 }
 
 pub async fn parse_url(
+    engine: &EngineInterface,
     cache: &Cache,
     url: &Spanned<Url>,
     span: Span,
@@ -56,9 +58,9 @@ pub async fn parse_url(
     })?;
 
     let object_store = match scheme {
-        ObjectStoreScheme::AmazonS3 => aws::build_object_store(cache, url).await?,
-        ObjectStoreScheme::Local => local::build_object_store(cache).await,
-        ObjectStoreScheme::Memory => mem::build_object_store(cache).await,
+        ObjectStoreScheme::AmazonS3 => aws::build_object_store(engine, cache, url).await?,
+        ObjectStoreScheme::Local => local::build_object_store(engine, cache).await?,
+        ObjectStoreScheme::Memory => mem::build_object_store(engine, cache).await?,
         _ => {
             return Err(ShellError::IncorrectValue {
                 msg: format!("Unsupported url: {}", url.item),

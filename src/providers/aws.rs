@@ -3,6 +3,7 @@ use std::{error::Error, sync::Arc};
 use aws_config::{BehaviorVersion, SdkConfig};
 use aws_credential_types::{provider::ProvideCredentials, Credentials};
 use itertools::Itertools;
+use nu_plugin::EngineInterface;
 use nu_protocol::{ShellError, Spanned};
 use object_store::aws::AmazonS3Builder;
 use url::Url;
@@ -12,6 +13,7 @@ use crate::cache::{Cache, ObjectStoreCacheKey};
 use super::NuObjectStore;
 
 pub async fn build_object_store(
+    engine: &EngineInterface,
     cache: &Cache,
     url: &Spanned<Url>,
 ) -> Result<NuObjectStore, ShellError> {
@@ -95,7 +97,9 @@ pub async fn build_object_store(
             region,
         };
 
-        cache.put_store(cache_key, object_store.clone()).await;
+        cache
+            .put_store(engine, cache_key, object_store.clone())
+            .await?;
         Ok(object_store)
     }
 }

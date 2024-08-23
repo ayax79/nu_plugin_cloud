@@ -40,18 +40,19 @@ impl PluginCommand for Remove {
     fn run(
         &self,
         plugin: &Self::Plugin,
-        _engine: &EngineInterface,
+        engine: &EngineInterface,
         call: &nu_plugin::EvaluatedCall,
         _input: PipelineData,
     ) -> Result<PipelineData, LabeledError> {
         plugin
             .rt
-            .block_on(command(plugin, call))
+            .block_on(command(engine, plugin, call))
             .map_err(LabeledError::from)
     }
 }
 
 async fn command(
+    engine: &EngineInterface,
     plugin: &CloudPlugin,
     call: &nu_plugin::EvaluatedCall,
 ) -> Result<PipelineData, ShellError> {
@@ -70,7 +71,7 @@ async fn command(
         })?,
         span: url_path.span,
     };
-    let (object_store, path) = plugin.parse_url(&url, call_span).await?;
+    let (object_store, path) = plugin.parse_url(engine, &url, call_span).await?;
 
     object_store
         .object_store()

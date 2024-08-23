@@ -83,27 +83,25 @@ async fn command(
         span: url_path.span,
     };
 
-    let result = match input {
+    match input {
         PipelineData::ByteStream(stream, _metadata) => {
             debug!("Handling byte stream");
 
             match stream.into_source() {
                 ByteStreamSource::Read(read) => {
-                    bytestream_to_cloud(plugin, read, engine.signals(), &url, call_span).await?;
+                    bytestream_to_cloud(plugin, engine, read, &url, call_span).await?;
                 }
                 ByteStreamSource::File(source) => {
-                    bytestream_to_cloud(plugin, source, engine.signals(), &url, call_span).await?;
+                    bytestream_to_cloud(plugin, engine, source, &url, call_span).await?;
                 }
                 ByteStreamSource::Child(mut child) => {
                     if let Some(stdout) = child.stdout.take() {
                         let res = match stdout {
                             ChildPipe::Pipe(pipe) => {
-                                bytestream_to_cloud(plugin, pipe, engine.signals(), &url, call_span)
-                                    .await
+                                bytestream_to_cloud(plugin, engine, pipe, &url, call_span).await
                             }
                             ChildPipe::Tee(tee) => {
-                                bytestream_to_cloud(plugin, tee, engine.signals(), &url, call_span)
-                                    .await
+                                bytestream_to_cloud(plugin, engine, tee, &url, call_span).await
                             }
                         };
                         res?;
@@ -115,37 +113,27 @@ async fn command(
         }
         PipelineData::ListStream(ls, _pipeline_metadata) if raw => {
             debug!("Handling list stream");
-            liststream_to_cloud(plugin, ls, engine.signals(), &url, call_span).await?;
+            liststream_to_cloud(plugin, engine, ls, &url, call_span).await?;
             Ok(PipelineData::empty())
         }
         input => {
             debug!("Handling input");
             let bytes = input_to_bytes(input, &url_path.item, raw, engine, call, call_span)?;
-            stream_bytes(plugin, bytes, &url, call_span).await?;
+            stream_bytes(plugin, engine, bytes, &url, call_span).await?;
             Ok(PipelineData::empty())
         }
-    };
-
-    match result {
-        Ok(_) if url.item.scheme() == "memory" => {
-            // turn off plugin GC if memory store is being used
-            debug!("Disabling garbage collection for memory store");
-            engine.set_gc_disabled(true)?;
-        }
-        _ => {}
     }
-
-    result
 }
 
 async fn liststream_to_cloud(
     plugin: &CloudPlugin,
+    engine: &EngineInterface,
     ls: ListStream,
-    signals: &Signals,
     url: &Spanned<Url>,
     span: Span,
 ) -> Result<(), ShellError> {
-    let (object_store, path) = plugin.parse_url(url, span).await?;
+    let signals = engine.signals();
+    let (object_store, path) = plugin.parse_url(engine, url, span).await?;
     let upload = object_store
         .object_store()
         .put_multipart(&path)
@@ -172,22 +160,23 @@ async fn liststream_to_cloud(
 
 async fn bytestream_to_cloud(
     plugin: &CloudPlugin,
+    engine: &EngineInterface,
     source: impl Read,
-    signals: &Signals,
     url: &Spanned<Url>,
     span: Span,
 ) -> Result<(), ShellError> {
-    stream_to_cloud_async(plugin, source, signals, url, span).await
+    stream_to_cloud_async(plugin, engine, source, url, span).await
 }
 
 async fn stream_to_cloud_async(
     plugin: &CloudPlugin,
+    engine: &EngineInterface,
     source: impl Read,
-    signals: &Signals,
     url: &Spanned<Url>,
     span: Span,
 ) -> Result<(), ShellError> {
-    let (object_store, path) = plugin.parse_url(url, span).await?;
+    let signals = engine.signals();
+    let (object_store, path) = plugin.parse_url(engine, url, span).await?;
     let upload = object_store
         .object_store()
         .put_multipart(&path)
@@ -306,11 +295,12 @@ fn convert_to_extension(
 
 async fn stream_bytes(
     plugin: &CloudPlugin,
+    engine: &EngineInterface,
     bytes: Vec<u8>,
     url: &Spanned<Url>,
     span: Span,
 ) -> Result<(), ShellError> {
-    let (object_store, path) = plugin.parse_url(url, span).await?;
+    let (object_store, path) = plugin.parse_url(engine, url, span).await?;
 
     let payload = PutPayload::from_bytes(Bytes::from(bytes));
     object_store
