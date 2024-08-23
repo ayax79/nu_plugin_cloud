@@ -2,7 +2,7 @@
 name = "nu_plugin_cloud"
 authors = ["Jack Wright"]
 description = "A nushell plugin for working with cloud storage services"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "MIT"
 
