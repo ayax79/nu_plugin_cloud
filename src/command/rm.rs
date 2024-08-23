@@ -46,12 +46,15 @@ impl PluginCommand for Remove {
     ) -> Result<PipelineData, LabeledError> {
         plugin
             .rt
-            .block_on(command(call))
+            .block_on(command(plugin, call))
             .map_err(LabeledError::from)
     }
 }
 
-async fn command(call: &nu_plugin::EvaluatedCall) -> Result<PipelineData, ShellError> {
+async fn command(
+    plugin: &CloudPlugin,
+    call: &nu_plugin::EvaluatedCall,
+) -> Result<PipelineData, ShellError> {
     let call_span = call.head;
     let url_path: Spanned<PathBuf> = call.req(0)?;
     let url = url_path
@@ -67,7 +70,7 @@ async fn command(call: &nu_plugin::EvaluatedCall) -> Result<PipelineData, ShellE
         })?,
         span: url_path.span,
     };
-    let (object_store, path) = crate::providers::parse_url(&url, call_span).await?;
+    let (object_store, path) = plugin.parse_url(&url, call_span).await?;
 
     object_store
         .object_store()

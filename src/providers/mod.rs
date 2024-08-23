@@ -1,25 +1,30 @@
 mod aws;
 
+use std::sync::Arc;
+
 use nu_protocol::{ShellError, Span, Spanned};
 use object_store::local::LocalFileSystem;
 use object_store::memory::InMemory;
 use object_store::{path::Path, ObjectStore, ObjectStoreScheme};
 use url::Url;
 
+use crate::cache::Cache;
+
+#[derive(Clone)]
 pub enum NuObjectStore {
-    Local(Box<dyn ObjectStore>),
-    Memory(Box<dyn ObjectStore>),
+    Local(Arc<dyn ObjectStore>),
+    Memory(Arc<dyn ObjectStore>),
     AmazonS3 {
-        store: Box<dyn ObjectStore>,
+        store: Arc<dyn ObjectStore>,
         bucket: String,
         region: String,
     },
     #[allow(dead_code)]
-    GoogleCloudStorage(Box<dyn ObjectStore>),
+    GoogleCloudStorage(Arc<dyn ObjectStore>),
     #[allow(dead_code)]
-    MicrosoftAzure(Box<dyn ObjectStore>),
+    MicrosoftAzure(Arc<dyn ObjectStore>),
     #[allow(dead_code)]
-    Http(Box<dyn ObjectStore>),
+    Http(Arc<dyn ObjectStore>),
 }
 impl NuObjectStore {
     pub fn object_store(&self) -> &dyn ObjectStore {
@@ -35,6 +40,7 @@ impl NuObjectStore {
 }
 
 pub async fn parse_url(
+    cache: &Cache,
     url: &Spanned<Url>,
     span: Span,
 ) -> Result<(NuObjectStore, Path), ShellError> {
@@ -52,14 +58,16 @@ pub async fn parse_url(
     })?;
 
     let object_store = match scheme {
-        ObjectStoreScheme::AmazonS3 => aws::parse_url(url).await?,
+        ObjectStoreScheme::AmazonS3 => {
+            aws::parse_url(cache, url).await?
+        }
         ObjectStoreScheme::Local => {
             let store = LocalFileSystem::new();
-            NuObjectStore::Local(Box::new(store))
+            NuObjectStore::Local(Arc::new(store))
         }
         ObjectStoreScheme::Memory => {
             let store = InMemory::new();
-            NuObjectStore::Memory(Box::new(store))
+            NuObjectStore::Memory(Arc::new(store))
         }
         _ => {
             return Err(ShellError::IncorrectValue {

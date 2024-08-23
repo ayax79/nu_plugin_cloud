@@ -48,11 +48,14 @@ impl PluginCommand for Open {
         call: &nu_plugin::EvaluatedCall,
         input: PipelineData,
     ) -> Result<PipelineData, LabeledError> {
-        command(plugin, engine, call, input).map_err(LabeledError::from)
+        plugin
+            .rt
+            .block_on(command(plugin, engine, call, input))
+            .map_err(LabeledError::from)
     }
 }
 
-fn command(
+async fn command(
     plugin: &CloudPlugin,
     engine: &EngineInterface,
     call: &nu_plugin::EvaluatedCall,
@@ -75,7 +78,7 @@ fn command(
         span: spanned_path.span,
     };
 
-    let bytes = plugin.cache_get(&url, call_span)?;
+    let bytes = plugin.cache.get(&url, call_span).await?;
 
     let content_type = if raw {
         path.extension()

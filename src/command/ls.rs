@@ -47,12 +47,12 @@ impl PluginCommand for Ls {
     ) -> Result<PipelineData, LabeledError> {
         plugin
             .rt
-            .block_on(command(call))
+            .block_on(command(plugin, call))
             .map_err(LabeledError::from)
     }
 }
 
-async fn command(call: &EvaluatedCall) -> Result<PipelineData, ShellError> {
+async fn command(plugin: &CloudPlugin, call: &EvaluatedCall) -> Result<PipelineData, ShellError> {
     let call_span = call.head;
     let spanned_path: Spanned<PathBuf> = call.req(0)?;
     let url_path = spanned_path.item;
@@ -69,7 +69,7 @@ async fn command(call: &EvaluatedCall) -> Result<PipelineData, ShellError> {
         span: spanned_path.span,
     };
 
-    let (object_store, path) = crate::providers::parse_url(&url, call_span).await?;
+    let (object_store, path) = plugin.parse_url(&url, call_span).await?;
     let list_stream = object_store.object_store().list(Some(&path));
 
     let values: Vec<Value> = list_stream

@@ -1,5 +1,6 @@
 use std::{
     collections::HashMap,
+    sync::{Mutex, MutexGuard},
     time::{Duration, Instant},
 };
 
@@ -23,15 +24,39 @@ pub struct CacheEntry {
     store: NuObjectStore,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum ObjectStoreCacheKey {
+    InMemory,
+    FileSystem,
+    AmazonS3 { bucket: String, region: String },
+}
+
+impl From<NuObjectStore> for ObjectStoreCacheKey {
+    fn from(value: NuObjectStore) -> Self {
+        match value {
+            NuObjectStore::Memory(_) => ObjectStoreCacheKey::InMemory,
+            NuObjectStore::Local(_) => ObjectStoreCacheKey::FileSystem,
+            NuObjectStore::AmazonS3 { bucket, region, .. } => {
+                ObjectStoreCacheKey::AmazonS3 { bucket, region }
+            }
+            NuObjectStore::GoogleCloudStorage(_) => unimplemented!(),
+            NuObjectStore::MicrosoftAzure(_) => unimplemented!(),
+            NuObjectStore::Http(_) => unimplemented!(),
+        }
+    }
+}
+
 /// Example cache that checks entries after 10 seconds for a new version
 #[derive(Default)]
 pub struct Cache {
-    entries: HashMap<Url, CacheEntry>,
+    entries: Mutex<HashMap<Url, CacheEntry>>,
+    stores: Mutex<HashMap<ObjectStoreCacheKey, NuObjectStore>>,
 }
 
 impl Cache {
-    pub async fn get(&mut self, url: &Spanned<Url>, span: Span) -> Result<Bytes, ShellError> {
-        Ok(match self.entries.get_mut(&url.item) {
+    pub async fn get(&self, url: &Spanned<Url>, span: Span) -> Result<Bytes, ShellError> {
+        let mut lock = self.entries_cache_lock()?;
+        Ok(match lock.get_mut(&url.item) {
             Some(e) => match e.refreshed_at.elapsed() < Duration::from_secs(10) {
                 true => e.data.clone(), // Return cached data
                 false => {
@@ -51,7 +76,7 @@ impl Cache {
             },
             None => {
                 // Not cached, fetch data
-                let (store, path) = parse_url(url, span).await?;
+                let (store, path) = parse_url(self, url, span).await?;
                 let get = store
                     .object_store()
                     .get(&path)
@@ -67,10 +92,47 @@ impl Cache {
                         refreshed_at: Instant::now(),
                         store,
                     };
-                    self.entries.insert(url.item.clone(), entry);
+                    lock.insert(url.item.clone(), entry);
                 }
                 data
             }
+        })
+    }
+
+    pub fn put_store(
+        &self,
+        key: ObjectStoreCacheKey,
+        store: NuObjectStore,
+    ) -> Result<(), ShellError> {
+        let mut lock = self.stores_cache_lock()?;
+        lock.insert(key, store);
+        Ok(())
+    }
+
+    pub fn get_store(&self, key: &ObjectStoreCacheKey) -> Result<Option<NuObjectStore>, ShellError> {
+        let lock = self.stores_cache_lock()?;
+        Ok(lock.get(key).cloned())
+    }
+
+    fn entries_cache_lock(&self) -> Result<MutexGuard<HashMap<Url, CacheEntry>>, ShellError> {
+        self.entries.lock().map_err(|e| ShellError::GenericError {
+            error: format!("error acquiring entries cache lock: {e}"),
+            msg: "".into(),
+            span: None,
+            help: None,
+            inner: vec![],
+        })
+    }
+
+    fn stores_cache_lock(
+        &self,
+    ) -> Result<MutexGuard<HashMap<ObjectStoreCacheKey, NuObjectStore>>, ShellError> {
+        self.stores.lock().map_err(|e| ShellError::GenericError {
+            error: format!("error acquiring object stores cache lock: {e}"),
+            msg: "".into(),
+            span: None,
+            help: None,
+            inner: vec![],
         })
     }
 }
