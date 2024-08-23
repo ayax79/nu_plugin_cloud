@@ -23,8 +23,8 @@ impl PluginCommand for Clear {
 
     fn examples(&self) -> Vec<Example> {
         vec![Example {
-            description: "Clear a file from s3.",
-            example: "cloud rm s3://mybucket/file.txt",
+            description: "Clear plugin cache",
+            example: "cloud cache-clear",
             result: None,
         }]
     }
