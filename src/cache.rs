@@ -1,9 +1,9 @@
 use std::{
     collections::HashMap,
-    sync::{Mutex, MutexGuard},
     time::{Duration, Instant},
 };
 
+use async_mutex::{Mutex, MutexGuard};
 use bytes::Bytes;
 use nu_protocol::{ShellError, Span, Spanned};
 use object_store::{path::Path, GetOptions};
@@ -55,7 +55,7 @@ pub struct Cache {
 
 impl Cache {
     pub async fn get(&self, url: &Spanned<Url>, span: Span) -> Result<Bytes, ShellError> {
-        let mut lock = self.entries_cache_lock()?;
+        let mut lock = self.entries_cache_lock().await;
         Ok(match lock.get_mut(&url.item) {
             Some(e) => match e.refreshed_at.elapsed() < Duration::from_secs(10) {
                 true => e.data.clone(), // Return cached data
@@ -99,41 +99,30 @@ impl Cache {
         })
     }
 
-    pub fn put_store(
+    pub async fn put_store(
         &self,
         key: ObjectStoreCacheKey,
         store: NuObjectStore,
     ) -> Result<(), ShellError> {
-        let mut lock = self.stores_cache_lock()?;
+        let mut lock = self.stores_cache_lock().await;
         lock.insert(key, store);
         Ok(())
     }
 
-    pub fn get_store(&self, key: &ObjectStoreCacheKey) -> Result<Option<NuObjectStore>, ShellError> {
-        let lock = self.stores_cache_lock()?;
+    pub async fn get_store(
+        &self,
+        key: &ObjectStoreCacheKey,
+    ) -> Result<Option<NuObjectStore>, ShellError> {
+        let lock = self.stores_cache_lock().await;
         Ok(lock.get(key).cloned())
     }
 
-    fn entries_cache_lock(&self) -> Result<MutexGuard<HashMap<Url, CacheEntry>>, ShellError> {
-        self.entries.lock().map_err(|e| ShellError::GenericError {
-            error: format!("error acquiring entries cache lock: {e}"),
-            msg: "".into(),
-            span: None,
-            help: None,
-            inner: vec![],
-        })
+    async fn entries_cache_lock(&self) -> MutexGuard<HashMap<Url, CacheEntry>> {
+        self.entries.lock().await
     }
 
-    fn stores_cache_lock(
-        &self,
-    ) -> Result<MutexGuard<HashMap<ObjectStoreCacheKey, NuObjectStore>>, ShellError> {
-        self.stores.lock().map_err(|e| ShellError::GenericError {
-            error: format!("error acquiring object stores cache lock: {e}"),
-            msg: "".into(),
-            span: None,
-            help: None,
-            inner: vec![],
-        })
+    async fn stores_cache_lock(&self) -> MutexGuard<HashMap<ObjectStoreCacheKey, NuObjectStore>> {
+        self.stores.lock().await
     }
 }
 
