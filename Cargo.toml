@@ -7,7 +7,7 @@ edition = "2021"
 license = "MIT"
 
 [dependencies]
-async-mutex = "1.4.0"
+async-lock = "3.4.0"
 aws-config = { version = "1.5", features = ["sso"] }
 aws-credential-types = "1.2"
 bytes = "1.7"

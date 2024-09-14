@@ -1,5 +1,5 @@
 use crate::providers::{parse_url, NuObjectStore};
-use async_mutex::{Mutex, MutexGuard};
+use async_lock::{Mutex, MutexGuard};
 use bytes::Bytes;
 use nu_plugin::EngineInterface;
 use nu_protocol::{ShellError, Span, Spanned};
