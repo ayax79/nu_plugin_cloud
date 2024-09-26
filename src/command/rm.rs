@@ -25,7 +25,7 @@ impl PluginCommand for Remove {
             .category(Category::FileSystem)
     }
 
-    fn usage(&self) -> &str {
+    fn description(&self) -> &str {
         "Remove a file from cloud sotrage"
     }
 

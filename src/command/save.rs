@@ -42,7 +42,7 @@ impl PluginCommand for Save {
         }]
     }
 
-    fn usage(&self) -> &str {
+    fn description(&self) -> &str {
         "Save a file to cloud storage"
     }
 

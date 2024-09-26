@@ -26,7 +26,7 @@ impl PluginCommand for Ls {
             .input_output_types(vec![(Type::Nothing, Type::Any)])
     }
 
-    fn usage(&self) -> &str {
+    fn description(&self) -> &str {
         "List the filenames, sizes, modificationtime , etags, and versions of a cloud location."
     }
 

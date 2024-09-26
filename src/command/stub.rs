@@ -18,7 +18,7 @@ impl PluginCommand for Stub {
             .input_output_types(vec![(Type::Nothing, Type::String)])
     }
 
-    fn usage(&self) -> &str {
+    fn description(&self) -> &str {
         "Provides the ability to read and write files from cloud storage"
     }
 

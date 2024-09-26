@@ -29,7 +29,7 @@ impl PluginCommand for Open {
             .category(Category::FileSystem)
     }
 
-    fn usage(&self) -> &str {
+    fn description(&self) -> &str {
         "Load a file into a cell, converting to table if possible (avoid by appending '--raw')."
     }
 

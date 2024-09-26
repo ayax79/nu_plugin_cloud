@@ -17,7 +17,7 @@ impl PluginCommand for Clear {
             .category(Category::FileSystem)
     }
 
-    fn usage(&self) -> &str {
+    fn description(&self) -> &str {
         "Clears plugin internal caches. This will also re-enable plugin GC."
     }
 
