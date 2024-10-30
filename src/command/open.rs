@@ -122,7 +122,7 @@ async fn command(
 
     match converter {
         Some(converter_id) => {
-            debug!("converter id: {converter_id}");
+            debug!("converter id: {converter_id:?}");
             let command_output =
                 engine.call_decl(converter_id, call.clone(), stream, true, false)?;
             Ok(command_output.into_pipeline_data_with_metadata(
