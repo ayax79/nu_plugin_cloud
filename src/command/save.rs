@@ -9,8 +9,9 @@ use bytes::Bytes;
 use log::debug;
 use nu_plugin::{EngineInterface, EvaluatedCall, PluginCommand};
 use nu_protocol::{
-    process::ChildPipe, ByteStreamSource, Category, Example, IntoSpanned, LabeledError, ListStream,
-    PipelineData, ShellError, Signals, Signature, Span, Spanned, SyntaxShape, Type, Value,
+    process::ChildPipe, shell_error::io::IoError, ByteStreamSource, Category, Example,
+    LabeledError, ListStream, PipelineData, ShellError, Signals, Signature, Span, Spanned,
+    SyntaxShape, Type, Value,
 };
 use object_store::{PutPayload, WriteMultipart};
 use url::Url;
@@ -214,7 +215,7 @@ fn generic_copy(
             Ok(0) => break,
             Ok(n) => n,
             Err(e) if e.kind() == ErrorKind::Interrupted => continue,
-            Err(e) => return Err(e.into_spanned(span).into()),
+            Err(e) => return Err(ShellError::Io(IoError::new(e.kind(), span, None))),
         };
         len += n;
         writer.write(&buf[..n]);
