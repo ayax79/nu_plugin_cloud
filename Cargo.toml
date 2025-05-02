@@ -3,7 +3,7 @@ name = "nu_plugin_cloud"
 authors = ["Jack Wright"]
 description = "A nushell plugin for working with cloud storage services"
 repository = "https://github.com/ayax79/nu_plugin_cloud"
-version = "0.2.5"
+version = "0.2.6"
 edition = "2021"
 license = "MIT"
 
@@ -18,13 +18,13 @@ itertools = "0.14.0"
 log = "0.4"
 mimalloc = "0.1.42"
 mime_guess = "2.0.5"
-nu-command = { version = "0.103", features = ["plugin"] }
-nu-plugin = "0.103"
-nu-protocol = { version = "0.103", features = ["plugin"] }
+nu-command = { version = "0.104", features = ["plugin"] }
+nu-plugin = "0.104"
+nu-protocol = { version = "0.104", features = ["plugin"] }
 object_store = { version = "0.12", features = ["aws"] }
 tokio = { version = "1.44", features = ["full"] }
 url = "2.5"
 
 [dev-dependencies]
-nu-plugin-test-support = "0.103"
-nu-command = "0.103"
+nu-plugin-test-support = "0.104"
+nu-command = "0.104"
