@@ -215,7 +215,7 @@ fn generic_copy(
             Ok(0) => break,
             Ok(n) => n,
             Err(e) if e.kind() == ErrorKind::Interrupted => continue,
-            Err(e) => return Err(ShellError::Io(IoError::new(e.kind(), span, None))),
+            Err(e) => return Err(ShellError::Io(IoError::new(e, span, None))),
         };
         len += n;
         writer.write(&buf[..n]);
