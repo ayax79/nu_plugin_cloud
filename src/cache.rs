@@ -1,9 +1,9 @@
-use crate::providers::{parse_url, NuObjectStore};
+use crate::providers::{NuObjectStore, parse_url};
 use async_lock::{Mutex, MutexGuard};
 use bytes::Bytes;
 use nu_plugin::EngineInterface;
 use nu_protocol::{ShellError, Span, Spanned};
-use object_store::{path::Path, GetOptions};
+use object_store::{GetOptions, path::Path};
 use std::{
     collections::HashMap,
     time::{Duration, Instant},

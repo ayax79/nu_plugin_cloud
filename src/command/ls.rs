@@ -3,8 +3,8 @@ use std::{path::PathBuf, str::FromStr, vec};
 use futures::StreamExt;
 use nu_plugin::{EngineInterface, EvaluatedCall, PluginCommand};
 use nu_protocol::{
-    record, Category, Example, LabeledError, PipelineData, ShellError, Signature, Spanned,
-    SyntaxShape, Type, Value,
+    Category, Example, LabeledError, PipelineData, ShellError, Signature, Spanned, SyntaxShape,
+    Type, Value, record,
 };
 use url::Url;
 

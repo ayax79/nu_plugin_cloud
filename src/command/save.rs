@@ -9,9 +9,9 @@ use bytes::Bytes;
 use log::debug;
 use nu_plugin::{EngineInterface, EvaluatedCall, PluginCommand};
 use nu_protocol::{
-    process::ChildPipe, shell_error::io::IoError, ByteStreamSource, Category, Example,
-    LabeledError, ListStream, PipelineData, ShellError, Signals, Signature, Span, Spanned,
-    SyntaxShape, Type, Value,
+    ByteStreamSource, Category, Example, LabeledError, ListStream, PipelineData, ShellError,
+    Signals, Signature, Span, Spanned, SyntaxShape, Type, Value, process::ChildPipe,
+    shell_error::io::IoError,
 };
 use object_store::{PutPayload, WriteMultipart};
 use url::Url;
@@ -57,7 +57,7 @@ impl PluginCommand for Save {
         plugin
             .rt
             .block_on(command(plugin, engine, call, input))
-            .map_err(LabeledError::from)
+            .map_err(|e| LabeledError::from(*e))
     }
 }
 
@@ -66,7 +66,7 @@ async fn command(
     engine: &EngineInterface,
     call: &nu_plugin::EvaluatedCall,
     input: PipelineData,
-) -> Result<PipelineData, ShellError> {
+) -> Result<PipelineData, Box<ShellError>> {
     let raw = call.has_flag("raw")?;
     let call_span = call.head;
     let url_path: Spanned<PathBuf> = call.req(0)?;
@@ -132,7 +132,7 @@ async fn liststream_to_cloud(
     ls: ListStream,
     url: &Spanned<Url>,
     span: Span,
-) -> Result<(), ShellError> {
+) -> Result<(), Box<ShellError>> {
     let signals = engine.signals();
     let (object_store, path) = plugin.parse_url(engine, url, span).await?;
     let upload = object_store
@@ -165,7 +165,7 @@ async fn bytestream_to_cloud(
     source: impl Read,
     url: &Spanned<Url>,
     span: Span,
-) -> Result<(), ShellError> {
+) -> Result<(), Box<ShellError>> {
     stream_to_cloud_async(plugin, engine, source, url, span).await
 }
 
@@ -175,7 +175,7 @@ async fn stream_to_cloud_async(
     source: impl Read,
     url: &Spanned<Url>,
     span: Span,
-) -> Result<(), ShellError> {
+) -> Result<(), Box<ShellError>> {
     let signals = engine.signals();
     let (object_store, path) = plugin.parse_url(engine, url, span).await?;
     let upload = object_store
@@ -206,7 +206,7 @@ fn generic_copy(
     writer: &mut WriteMultipart,
     span: Span,
     signals: &Signals,
-) -> Result<u64, ShellError> {
+) -> Result<u64, Box<ShellError>> {
     let buf = &mut [0; DEFAULT_BUF_SIZE];
     let mut len = 0;
     loop {
@@ -215,7 +215,7 @@ fn generic_copy(
             Ok(0) => break,
             Ok(n) => n,
             Err(e) if e.kind() == ErrorKind::Interrupted => continue,
-            Err(e) => return Err(ShellError::Io(IoError::new(e, span, None))),
+            Err(e) => return Err(Box::new(ShellError::Io(IoError::new(e, span, None)))),
         };
         len += n;
         writer.write(&buf[..n]);
@@ -226,7 +226,7 @@ fn generic_copy(
 /// Convert [`Value::String`] [`Value::Binary`] or [`Value::List`] into [`Vec`] of bytes
 ///
 /// Propagates [`Value::Error`] and creates error otherwise
-fn value_to_bytes(value: Value) -> Result<Vec<u8>, ShellError> {
+fn value_to_bytes(value: Value) -> Result<Vec<u8>, Box<ShellError>> {
     match value {
         Value::String { val, .. } => Ok(val.into_bytes()),
         Value::Binary { val, .. } => Ok(val),
@@ -241,7 +241,7 @@ fn value_to_bytes(value: Value) -> Result<Vec<u8>, ShellError> {
             Ok(val.into_bytes())
         }
         // Propagate errors by explicitly matching them before the final case.
-        Value::Error { error, .. } => Err(*error),
+        Value::Error { error, .. } => Err(Box::new(*error)),
         other => Ok(other.coerce_into_string()?.into_bytes()),
     }
 }
@@ -255,7 +255,7 @@ fn input_to_bytes(
     engine: &EngineInterface,
     call: &EvaluatedCall,
     span: Span,
-) -> Result<Vec<u8>, ShellError> {
+) -> Result<Vec<u8>, Box<ShellError>> {
     let ext = if raw {
         None
     } else if let PipelineData::ByteStream(..) = input {
@@ -284,7 +284,7 @@ fn convert_to_extension(
     extension: &str,
     input: PipelineData,
     call: &EvaluatedCall,
-) -> Result<PipelineData, ShellError> {
+) -> Result<PipelineData, Box<ShellError>> {
     if let Some(decl_id) = engine.find_decl(format!("to {extension}"))? {
         debug!("Found to {extension} decl: converting input");
         let command_output = engine.call_decl(decl_id, call.clone(), input, true, false)?;

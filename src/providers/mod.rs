@@ -5,7 +5,7 @@ mod mem;
 use crate::cache::Cache;
 use nu_plugin::EngineInterface;
 use nu_protocol::{ShellError, Span, Spanned};
-use object_store::{path::Path, ObjectStore, ObjectStoreScheme};
+use object_store::{ObjectStore, ObjectStoreScheme, path::Path};
 use std::sync::Arc;
 use url::Url;
 
@@ -66,7 +66,7 @@ pub async fn parse_url(
                 msg: format!("Unsupported url: {}", url.item),
                 val_span: url.span,
                 call_span: span,
-            })
+            });
         }
     };
 

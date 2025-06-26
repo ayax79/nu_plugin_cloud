@@ -1,7 +1,7 @@
 use std::{error::Error, sync::Arc};
 
 use aws_config::{BehaviorVersion, SdkConfig};
-use aws_credential_types::{provider::ProvideCredentials, Credentials};
+use aws_credential_types::{Credentials, provider::ProvideCredentials};
 use itertools::Itertools;
 use nu_plugin::EngineInterface;
 use nu_protocol::{ShellError, Spanned};

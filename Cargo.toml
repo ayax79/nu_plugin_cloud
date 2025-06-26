@@ -1,10 +1,12 @@
+cargo-features = ["edition2024"]
+
 [package]
 name = "nu_plugin_cloud"
 authors = ["Jack Wright"]
 description = "A nushell plugin for working with cloud storage services"
 repository = "https://github.com/ayax79/nu_plugin_cloud"
-version = "0.2.7"
-edition = "2021"
+version = "0.2.8"
+edition = "2024"
 license = "MIT"
 
 [dependencies]

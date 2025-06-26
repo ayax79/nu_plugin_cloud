@@ -23,7 +23,7 @@ mod tests {
     use crate::CloudPlugin;
     use nu_command::{FromCsv, Select, ToCsv};
     use nu_plugin_test_support::PluginTest;
-    use nu_protocol::{record, PipelineData, Span, Value};
+    use nu_protocol::{PipelineData, Span, Value, record};
 
     #[test]
     fn test_save_open() -> Result<(), Box<dyn std::error::Error>> {
