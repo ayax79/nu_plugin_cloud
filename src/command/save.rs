@@ -143,7 +143,7 @@ async fn liststream_to_cloud(
     let mut write = WriteMultipart::new(upload);
 
     for v in ls {
-        signals.check(span)?;
+        signals.check(&span)?;
         let bytes = value_to_bytes(v)?;
         write.write(&bytes)
     }
@@ -210,7 +210,7 @@ fn generic_copy(
     let buf = &mut [0; DEFAULT_BUF_SIZE];
     let mut len = 0;
     loop {
-        signals.check(span)?;
+        signals.check(&span)?;
         let n = match reader.read(buf) {
             Ok(0) => break,
             Ok(n) => n,
