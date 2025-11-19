@@ -139,7 +139,7 @@ impl Cache {
 
 fn cache_get_error(e: impl std::error::Error) -> ShellError {
     ShellError::GenericError {
-        error: format!("Error fetching data from obect store: {}", e),
+        error: format!("Error fetching data from obect store: {e}"),
         msg: "".into(),
         span: None,
         help: None,

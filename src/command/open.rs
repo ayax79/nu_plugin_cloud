@@ -99,7 +99,7 @@ async fn command(
     let converter = if !raw {
         if let Some(ext) = &extension {
             debug!("Attempting to use converter: {ext}");
-            engine.find_decl(format!("from {}", ext))?
+            engine.find_decl(format!("from {ext}"))?
         } else {
             None
         }
@@ -114,10 +114,11 @@ async fn command(
             engine.signals().clone(),
             ByteStreamType::Unknown,
         ),
-        Some(PipelineMetadata {
-            data_source: DataSource::FilePath(path.to_path_buf()),
-            content_type,
-        }),
+        Some(
+            PipelineMetadata::default()
+                .with_data_source(DataSource::FilePath(path.to_path_buf()))
+                .with_content_type(content_type.clone()),
+        ),
     );
 
     match converter {

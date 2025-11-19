@@ -78,7 +78,7 @@ async fn command(
         .delete(&path)
         .await
         .map_err(|e| ShellError::GenericError {
-            error: format!("Could not delete delete from cloud storage: {}", e),
+            error: format!("Could not delete delete from cloud storage: {e}"),
             msg: "".into(),
             span: Some(call_span),
             help: None,
