@@ -128,11 +128,13 @@ impl Cache {
         engine.set_gc_disabled(false)
     }
 
-    async fn entries_cache_lock(&self) -> MutexGuard<HashMap<Url, CacheEntry>> {
+    async fn entries_cache_lock(&self) -> MutexGuard<'_, HashMap<Url, CacheEntry>> {
         self.entries.lock().await
     }
 
-    async fn stores_cache_lock(&self) -> MutexGuard<HashMap<ObjectStoreCacheKey, NuObjectStore>> {
+    async fn stores_cache_lock(
+        &self,
+    ) -> MutexGuard<'_, HashMap<ObjectStoreCacheKey, NuObjectStore>> {
         self.stores.lock().await
     }
 }

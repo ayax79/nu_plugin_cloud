@@ -30,7 +30,7 @@ impl PluginCommand for Ls {
         "List the filenames, sizes, modificationtime , etags, and versions of a cloud location."
     }
 
-    fn examples(&self) -> Vec<Example> {
+    fn examples(&self) -> Vec<Example<'_>> {
         vec![Example {
             description: "List the files in a s3 bucket.",
             example: "cloud ls s3://mybucket",

@@ -33,7 +33,7 @@ impl PluginCommand for Open {
         "Load a file into a cell, converting to table if possible (avoid by appending '--raw')."
     }
 
-    fn examples(&self) -> Vec<Example> {
+    fn examples(&self) -> Vec<Example<'_>> {
         vec![Example {
             description: "Load a file from s3.",
             example: "cloud open s3://mybucket/file.txt",

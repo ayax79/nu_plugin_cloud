@@ -29,7 +29,7 @@ impl PluginCommand for Remove {
         "Remove a file from cloud sotrage"
     }
 
-    fn examples(&self) -> Vec<Example> {
+    fn examples(&self) -> Vec<Example<'_>> {
         vec![Example {
             description: "Remove a file from s3.",
             example: "cloud rm s3://mybucket/file.txt",

@@ -21,7 +21,7 @@ impl PluginCommand for Clear {
         "Clears plugin internal caches. This will also re-enable plugin GC."
     }
 
-    fn examples(&self) -> Vec<Example> {
+    fn examples(&self) -> Vec<Example<'_>> {
         vec![Example {
             description: "Clear plugin cache",
             example: "cloud cache-clear",
