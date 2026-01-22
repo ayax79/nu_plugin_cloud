@@ -5,6 +5,7 @@ use nu_protocol::{
     Category, Example, LabeledError, PipelineData, ShellError, Signature, Spanned, SyntaxShape,
     Type,
 };
+use object_store::ObjectStoreExt;
 use url::Url;
 
 use crate::CloudPlugin;
