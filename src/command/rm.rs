@@ -29,7 +29,7 @@ impl PluginCommand for Remove {
         "Remove a file from cloud sotrage"
     }
 
-    fn examples(&self) -> Vec<Example> {
+    fn examples(&self) -> Vec<Example<'_>> {
         vec![Example {
             description: "Remove a file from s3.",
             example: "cloud rm s3://mybucket/file.txt",
@@ -78,7 +78,7 @@ async fn command(
         .delete(&path)
         .await
         .map_err(|e| ShellError::GenericError {
-            error: format!("Could not delete delete from cloud storage: {}", e),
+            error: format!("Could not delete delete from cloud storage: {e}"),
             msg: "".into(),
             span: Some(call_span),
             help: None,

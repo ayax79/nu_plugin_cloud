@@ -35,7 +35,7 @@ impl PluginCommand for Save {
             .category(Category::FileSystem)
     }
 
-    fn examples(&self) -> Vec<Example> {
+    fn examples(&self) -> Vec<Example<'_>> {
         vec![Example {
             description: "Save a csv file to s3.",
             example: "[[a b]; [1 1] [1 2] [2 1] [2 2] [3 1] [3 2]] | to csv | cloud save s3://mybucket/file.csv",
