@@ -13,7 +13,7 @@ use nu_protocol::{
     Signals, Signature, Span, Spanned, SyntaxShape, Type, Value, process::ChildPipe,
     shell_error::io::IoError,
 };
-use object_store::{PutPayload, WriteMultipart};
+use object_store::{ObjectStoreExt, PutPayload, WriteMultipart};
 use url::Url;
 
 use crate::CloudPlugin;

@@ -3,7 +3,7 @@ use async_lock::{Mutex, MutexGuard};
 use bytes::Bytes;
 use nu_plugin::EngineInterface;
 use nu_protocol::{ShellError, Span, Spanned};
-use object_store::{GetOptions, path::Path};
+use object_store::{GetOptions, ObjectStoreExt, path::Path};
 use std::{
     collections::HashMap,
     time::{Duration, Instant},
