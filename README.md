@@ -8,8 +8,8 @@ Provides uniform access to cloud storage services for nushell.
 - `cloud rm` - Remove a file from cloud sotrage
 - `cloud save` - Save a file to cloud storage
 - AWS S3 support
+- Google Cloud Storage support
 - Coming Soon: Azure support
-- Coming Soon: Google cloud support
 
 ## Installation
 

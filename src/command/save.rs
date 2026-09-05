@@ -36,11 +36,18 @@ impl PluginCommand for Save {
     }
 
     fn examples(&self) -> Vec<Example<'_>> {
-        vec![Example {
-            description: "Save a csv file to s3.",
-            example: "[[a b]; [1 1] [1 2] [2 1] [2 2] [3 1] [3 2]] | to csv | cloud save s3://mybucket/file.csv",
-            result: None,
-        }]
+        vec![
+            Example {
+                description: "Save a csv file to s3.",
+                example: "[[a b]; [1 1] [1 2] [2 1] [2 2] [3 1] [3 2]] | to csv | cloud save s3://mybucket/file.csv",
+                result: None,
+            },
+            Example {
+                description: "Save a csv file to gcs.",
+                example: "[[a b]; [1 1] [1 2] [2 1] [2 2] [3 1] [3 2]] | to csv | cloud save gs://mybucket/file.csv",
+                result: None,
+            },
+        ]
     }
 
     fn description(&self) -> &str {

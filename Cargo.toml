@@ -21,7 +21,7 @@ mime_guess = "2.0.5"
 nu-command = { version = "0.110", features = ["plugin"] }
 nu-plugin = "0.110"
 nu-protocol = { version = "0.110", features = ["plugin"] }
-object_store = { version = "0.13", features = ["aws"] }
+object_store = { version = "0.13", features = ["aws", "gcp"] }
 tokio = { version = "1.44", features = ["full"] }
 url = "2.5"
 
