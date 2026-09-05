@@ -148,12 +148,11 @@ async fn liststream_to_cloud(
         write.write(&bytes)
     }
 
-    let _ = write.finish().await.map_err(|e| ShellError::GenericError {
-        error: format!("Could not write to S3: {e}"),
-        msg: "".into(),
-        span: None,
-        help: None,
-        inner: vec![],
+    let _ = write.finish().await.map_err(|e| {
+        ShellError::Generic(nu_protocol::shell_error::generic::GenericError::new_internal(
+            format!("Could not write to S3: {e}"),
+            "",
+        ))
     })?;
 
     Ok(())
@@ -187,12 +186,11 @@ async fn stream_to_cloud_async(
 
     let _ = generic_copy(source, &mut write, span, signals)?;
 
-    let _ = write.finish().await.map_err(|e| ShellError::GenericError {
-        error: format!("Could not write to S3: {e}"),
-        msg: "".into(),
-        span: None,
-        help: None,
-        inner: vec![],
+    let _ = write.finish().await.map_err(|e| {
+        ShellError::Generic(nu_protocol::shell_error::generic::GenericError::new_internal(
+            format!("Could not write to S3: {e}"),
+            "",
+        ))
     })?;
 
     Ok(())
@@ -229,7 +227,7 @@ fn generic_copy(
 fn value_to_bytes(value: Value) -> Result<Vec<u8>, Box<ShellError>> {
     match value {
         Value::String { val, .. } => Ok(val.into_bytes()),
-        Value::Binary { val, .. } => Ok(val),
+        Value::Binary { val, .. } => Ok(val.into_owned()),
         Value::List { vals, .. } => {
             let val = vals
                 .into_iter()
@@ -308,12 +306,11 @@ async fn stream_bytes(
         .object_store()
         .put(&path, payload)
         .await
-        .map_err(|e| ShellError::GenericError {
-            error: format!("Could not write to S3: {e}"),
-            msg: "".into(),
-            span: None,
-            help: None,
-            inner: vec![],
+        .map_err(|e| {
+            ShellError::Generic(nu_protocol::shell_error::generic::GenericError::new_internal(
+                format!("Could not write to S3: {e}"),
+                "",
+            ))
         })?;
 
     Ok(())

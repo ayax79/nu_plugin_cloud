@@ -24,15 +24,15 @@ pub async fn build_object_store(
     let bucket = parsed_info
         .bucket
         .clone()
-        .ok_or_else(|| ShellError::GenericError {
-            error: format!(
-                "Could not determine Amazon S3 bucket name from url {}",
-                url.item
-            ),
-            msg: "".into(),
-            span: Some(url.span),
-            help: None,
-            inner: vec![],
+        .ok_or_else(|| {
+            ShellError::Generic(nu_protocol::shell_error::generic::GenericError::new(
+                format!(
+                    "Could not determine Amazon S3 bucket name from url {}",
+                    url.item
+                ),
+                "",
+                url.span,
+            ))
         })?;
 
     let region = if let Some(region) = aws_config
@@ -42,13 +42,13 @@ pub async fn build_object_store(
     {
         region
     } else {
-        return Err(ShellError::GenericError {
-            error: "Could not determine AWS region from environment".into(),
-            msg: "".into(),
-            span: Some(url.span),
-            help: None,
-            inner: vec![],
-        });
+        return Err(ShellError::Generic(
+            nu_protocol::shell_error::generic::GenericError::new(
+                "Could not determine AWS region from environment",
+                "",
+                url.span,
+            ),
+        ));
     };
 
     let cache_key = ObjectStoreCacheKey::AmazonS3 {
@@ -74,21 +74,21 @@ pub async fn build_object_store(
                 builder
             }
         } else {
-            return Err(ShellError::GenericError {
-                error: "Could not determine AWS credentials from environment".into(),
-                msg: "".into(),
-                span: Some(url.span),
-                help: None,
-                inner: vec![],
-            });
+            return Err(ShellError::Generic(
+                nu_protocol::shell_error::generic::GenericError::new(
+                    "Could not determine AWS credentials from environment",
+                    "",
+                    url.span,
+                ),
+            ));
         };
 
-        let s3 = builder.build().map_err(|e| ShellError::GenericError {
-            error: format!("Could not create Amazon S3 client: {e}"),
-            msg: "".into(),
-            span: Some(url.span),
-            help: None,
-            inner: vec![],
+        let s3 = builder.build().map_err(|e| {
+            ShellError::Generic(nu_protocol::shell_error::generic::GenericError::new(
+                format!("Could not create Amazon S3 client: {e}"),
+                "",
+                url.span,
+            ))
         })?;
 
         let object_store = NuObjectStore::AmazonS3 {
@@ -111,17 +111,16 @@ async fn aws_load_config() -> SdkConfig {
 async fn aws_creds(aws_config: &SdkConfig) -> Result<Option<Credentials>, ShellError> {
     if let Some(provider) = aws_config.credentials_provider() {
         Ok(Some(provider.provide_credentials().await.map_err(|e| {
-            ShellError::GenericError {
-                error: format!(
-                    "Could not fetch AWS credentials: {} - {}",
-                    e,
-                    e.source().map(|e| format!("{e}")).unwrap_or("".to_string())
+            ShellError::Generic(
+                nu_protocol::shell_error::generic::GenericError::new_internal(
+                    format!(
+                        "Could not fetch AWS credentials: {} - {}",
+                        e,
+                        e.source().map(|e| format!("{e}")).unwrap_or("".to_string())
+                    ),
+                    "",
                 ),
-                msg: "".into(),
-                span: None,
-                help: None,
-                inner: vec![],
-            }
+            )
         })?))
     } else {
         Ok(None)
