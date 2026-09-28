@@ -15,15 +15,15 @@ pub async fn build_object_store(
     cache: &Cache,
     url: &Spanned<Url>,
 ) -> Result<NuObjectStore, ShellError> {
-    let bucket = parse_bucket(&url.item).ok_or_else(|| ShellError::GenericError {
-        error: format!(
-            "Could not determine Google Cloud Storage bucket name from url {}",
-            url.item
-        ),
-        msg: "".into(),
-        span: Some(url.span),
-        help: None,
-        inner: vec![],
+    let bucket = parse_bucket(&url.item).ok_or_else(|| {
+        ShellError::Generic(nu_protocol::shell_error::generic::GenericError::new(
+            format!(
+                "Could not determine Google Cloud Storage bucket name from url {}",
+                url.item
+            ),
+            "",
+            url.span,
+        ))
     })?;
 
     let cache_key = ObjectStoreCacheKey::GoogleCloudStorage {
@@ -49,16 +49,13 @@ fn build_store(
     url: &Url,
     span: Span,
 ) -> Result<Arc<dyn ObjectStore>, ShellError> {
-    let gcs = builder
-        .with_url(url.to_string())
-        .build()
-        .map_err(|e| ShellError::GenericError {
-            error: format!("Could not create Google Cloud Storage client: {e}"),
-            msg: "".into(),
-            span: Some(span),
-            help: None,
-            inner: vec![],
-        })?;
+    let gcs = builder.with_url(url.to_string()).build().map_err(|e| {
+        ShellError::Generic(nu_protocol::shell_error::generic::GenericError::new(
+            format!("Could not create Google Cloud Storage client: {e}"),
+            "",
+            span,
+        ))
+    })?;
 
     Ok(Arc::new(gcs))
 }

@@ -96,13 +96,12 @@ async fn command(
                 call_span,
             ),
             Err(e) => {
-                let se = ShellError::GenericError {
-                    error: format!("Error fetching data from object store: {e}"),
-                    msg: "".into(),
-                    span: None,
-                    help: None,
-                    inner: vec![],
-                };
+                let se = ShellError::Generic(
+                    nu_protocol::shell_error::generic::GenericError::new_internal(
+                        format!("Error fetching data from object store: {e}"),
+                        "",
+                    ),
+                );
                 Value::error(se, call_span)
             }
         })

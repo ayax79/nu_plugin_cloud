@@ -85,12 +85,12 @@ async fn command(
         .object_store()
         .delete(&path)
         .await
-        .map_err(|e| ShellError::GenericError {
-            error: format!("Could not delete delete from cloud storage: {e}"),
-            msg: "".into(),
-            span: Some(call_span),
-            help: None,
-            inner: vec![],
+        .map_err(|e| {
+            ShellError::Generic(nu_protocol::shell_error::generic::GenericError::new(
+                format!("Could not delete delete from cloud storage: {e}"),
+                "",
+                call_span,
+            ))
         })?;
 
     Ok(PipelineData::empty())

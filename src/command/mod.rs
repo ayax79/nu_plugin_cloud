@@ -102,4 +102,26 @@ mod tests {
         );
         Ok(())
     }
+
+    #[test]
+    fn test_save_open_binary() -> Result<(), Box<dyn std::error::Error>> {
+        let plugin = CloudPlugin::default();
+        let mut plugin_test = PluginTest::new("polars", plugin.into())?;
+        let result = plugin_test.eval_with(
+            "0x[00 01 ff] | cloud save --raw memory:/foo.bin | cloud open --raw memory:/foo.bin",
+            PipelineData::Empty,
+        )?;
+        let value = result.into_value(Span::test_data())?;
+        assert_eq!(value, Value::test_binary(vec![0x00, 0x01, 0xff]));
+        Ok(())
+    }
+
+    #[test]
+    fn test_open_not_found_error() {
+        let plugin = CloudPlugin::default();
+        let mut plugin_test = PluginTest::new("polars", plugin.into()).unwrap();
+        let result = plugin_test.eval_with("cloud open memory:/missing.txt", PipelineData::Empty);
+        let err = result.expect_err("opening a missing file should fail");
+        assert!(err.to_string().contains("Error fetching data"));
+    }
 }
