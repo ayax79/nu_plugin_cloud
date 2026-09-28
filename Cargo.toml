@@ -22,7 +22,7 @@ nu-command = { version = "0.116.0", features = ["plugin"] }
 nu-plugin = "0.116.0"
 nu-plugin-engine = { version = "0.116.0", features = ["local-socket"] }
 nu-protocol = { version = "0.116.0", features = ["plugin"] }
-object_store = { version = "0.14", features = ["aws"] }
+object_store = { version = "0.14.2", features = ["aws", "gcp"] }
 tokio = { version = "1.53", features = ["full"] }
 url = "2.5"
 

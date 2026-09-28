@@ -1,4 +1,5 @@
 mod aws;
+mod gcs;
 mod local;
 mod mem;
 
@@ -18,8 +19,10 @@ pub enum NuObjectStore {
         bucket: String,
         region: String,
     },
-    #[allow(dead_code)]
-    GoogleCloudStorage(Arc<dyn ObjectStore>),
+    GoogleCloudStorage {
+        store: Arc<dyn ObjectStore>,
+        bucket: String,
+    },
     #[allow(dead_code)]
     MicrosoftAzure(Arc<dyn ObjectStore>),
     #[allow(dead_code)]
@@ -31,7 +34,7 @@ impl NuObjectStore {
             NuObjectStore::Local(store) => store.as_ref(),
             NuObjectStore::Memory(store) => store.as_ref(),
             NuObjectStore::AmazonS3 { store, .. } => store.as_ref(),
-            NuObjectStore::GoogleCloudStorage(store) => store.as_ref(),
+            NuObjectStore::GoogleCloudStorage { store, .. } => store.as_ref(),
             NuObjectStore::MicrosoftAzure(store) => store.as_ref(),
             NuObjectStore::Http(store) => store.as_ref(),
         }
@@ -59,6 +62,9 @@ pub async fn parse_url(
 
     let object_store = match scheme {
         ObjectStoreScheme::AmazonS3 => aws::build_object_store(engine, cache, url).await?,
+        ObjectStoreScheme::GoogleCloudStorage => {
+            gcs::build_object_store(engine, cache, url).await?
+        }
         ObjectStoreScheme::Local => local::build_object_store(engine, cache).await?,
         ObjectStoreScheme::Memory => mem::build_object_store(engine, cache).await?,
         _ => {
@@ -71,4 +77,32 @@ pub async fn parse_url(
     };
 
     Ok((object_store, path))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_gs_url_maps_to_google_cloud_storage() {
+        let url = Url::parse("gs://test-bucket/path/to/file.txt").unwrap();
+        let (scheme, path) = ObjectStoreScheme::parse(&url).unwrap();
+
+        assert!(matches!(scheme, ObjectStoreScheme::GoogleCloudStorage));
+        assert_eq!(path.as_ref(), "path/to/file.txt");
+    }
+
+    #[test]
+    fn test_gs_url_without_host_is_not_supported() {
+        let url = Url::parse("gs://").unwrap();
+        assert!(ObjectStoreScheme::parse(&url).is_err());
+    }
+
+    #[test]
+    fn test_s3_url_does_not_map_to_google_cloud_storage() {
+        let url = Url::parse("s3://test-bucket/path/to/file.txt").unwrap();
+        let (scheme, _) = ObjectStoreScheme::parse(&url).unwrap();
+
+        assert!(!matches!(scheme, ObjectStoreScheme::GoogleCloudStorage));
+    }
 }

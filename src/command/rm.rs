@@ -31,11 +31,18 @@ impl PluginCommand for Remove {
     }
 
     fn examples(&self) -> Vec<Example<'_>> {
-        vec![Example {
-            description: "Remove a file from s3.",
-            example: "cloud rm s3://mybucket/file.txt",
-            result: None,
-        }]
+        vec![
+            Example {
+                description: "Remove a file from s3.",
+                example: "cloud rm s3://mybucket/file.txt",
+                result: None,
+            },
+            Example {
+                description: "Remove a file from gcs.",
+                example: "cloud rm gs://mybucket/file.txt",
+                result: None,
+            },
+        ]
     }
 
     fn run(

@@ -31,11 +31,18 @@ impl PluginCommand for Ls {
     }
 
     fn examples(&self) -> Vec<Example<'_>> {
-        vec![Example {
-            description: "List the files in a s3 bucket.",
-            example: "cloud ls s3://mybucket",
-            result: None,
-        }]
+        vec![
+            Example {
+                description: "List the files in a s3 bucket.",
+                example: "cloud ls s3://mybucket",
+                result: None,
+            },
+            Example {
+                description: "List the files in a gcs bucket.",
+                example: "cloud ls gs://mybucket",
+                result: None,
+            },
+        ]
     }
 
     fn run(

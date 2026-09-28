@@ -28,6 +28,7 @@ pub enum ObjectStoreCacheKey {
     Memory,
     Local,
     AmazonS3 { bucket: String, region: String },
+    GoogleCloudStorage { bucket: String },
 }
 
 impl From<&NuObjectStore> for ObjectStoreCacheKey {
@@ -39,7 +40,11 @@ impl From<&NuObjectStore> for ObjectStoreCacheKey {
                 bucket: bucket.to_owned(),
                 region: region.to_owned(),
             },
-            NuObjectStore::GoogleCloudStorage(_) => unimplemented!(),
+            NuObjectStore::GoogleCloudStorage { bucket, .. } => {
+                ObjectStoreCacheKey::GoogleCloudStorage {
+                    bucket: bucket.to_owned(),
+                }
+            }
             NuObjectStore::MicrosoftAzure(_) => unimplemented!(),
             NuObjectStore::Http(_) => unimplemented!(),
         }

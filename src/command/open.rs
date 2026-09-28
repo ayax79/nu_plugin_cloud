@@ -34,11 +34,18 @@ impl PluginCommand for Open {
     }
 
     fn examples(&self) -> Vec<Example<'_>> {
-        vec![Example {
-            description: "Load a file from s3.",
-            example: "cloud open s3://mybucket/file.txt",
-            result: None,
-        }]
+        vec![
+            Example {
+                description: "Load a file from s3.",
+                example: "cloud open s3://mybucket/file.txt",
+                result: None,
+            },
+            Example {
+                description: "Load a file from gcs.",
+                example: "cloud open gs://mybucket/file.txt",
+                result: None,
+            },
+        ]
     }
 
     fn run(
