@@ -1,11 +1,10 @@
 [package]
 name = "nu_plugin_cloud"
-authors = ["Jack Wright"]
+version = "0.2.11+0.116.0"
+edition = "2024"
 description = "A nushell plugin for working with cloud storage services"
 repository = "https://github.com/ayax79/nu_plugin_cloud"
-version = "0.2.11+0.116.0"
 license = "MIT"
-edition = "2024"
 
 [dependencies]
 async-lock = "3.4.2"
@@ -26,5 +25,5 @@ tokio = { version = "1.53", features = ["full"] }
 url = "2.5"
 
 [dev-dependencies]
-nu-plugin-test-support = "0.116.0"
 nu-command = { version = "0.116.0", features = ["plugin"] }
+nu-plugin-test-support = "0.116.0"
