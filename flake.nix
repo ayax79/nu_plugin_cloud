@@ -1,6 +1,11 @@
 {
   description = "A nushell plugin for working with cloud storage services";
   inputs.rust-flake.url = "github:KaiSforza/rust-flake";
+  inputs.systems = {
+    url = "path:./systems.nix";
+    flake = false;
+  };
+  inputs.rust-flake.inputs.systems.follows = "systems";
   outputs = inputs:
     let inherit (inputs.rust-flake.lib) rust-flake rust-flakes;
     in rust-flakes [
