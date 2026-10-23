@@ -18,7 +18,6 @@ itertools = "0.15"
 log = "0.4"
 mimalloc = "0.1.52"
 mime_guess = "2.0.5"
-nu-command = { version = "0.116.0", features = ["plugin"] }
 nu-plugin = "0.116.0"
 nu-plugin-engine = { version = "0.116.0", features = ["local-socket"] }
 nu-protocol = { version = "0.116.0", features = ["plugin"] }
@@ -28,4 +27,4 @@ url = "2.5"
 
 [dev-dependencies]
 nu-plugin-test-support = "0.116.0"
-nu-command = "0.116.0"
+nu-command = { version = "0.116.0", features = ["plugin"] }
