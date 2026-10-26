@@ -3,6 +3,11 @@
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   inputs.rust-flake.url = "github:KaiSforza/rust-flake";
   inputs.rust-flake.inputs.nixpkgs.follows = "nixpkgs";
+  # Pin rust-overlay at the top level so `nix flake update` advances it
+  # rather than resetting it to rust-flake's (much older) locked revision.
+  inputs.rust-overlay.url = "github:oxalica/rust-overlay";
+  inputs.rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
+  inputs.rust-flake.inputs.rust-overlay.follows = "rust-overlay";
   inputs.systems = {
     url = "path:./systems.nix";
     flake = false;
@@ -34,7 +39,7 @@
             import inputs.nixpkgs {
               inherit system;
               overlays = [
-                inputs.rust-flake.inputs.rust-overlay.overlays.default
+                inputs.rust-overlay.overlays.default
                 outputs.overlays.default
               ];
             }
