@@ -1,6 +1,8 @@
 {
   description = "A nushell plugin for working with cloud storage services";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   inputs.rust-flake.url = "github:KaiSforza/rust-flake";
+  inputs.rust-flake.inputs.nixpkgs.follows = "nixpkgs";
   inputs.systems = {
     url = "path:./systems.nix";
     flake = false;
