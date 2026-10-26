@@ -145,8 +145,10 @@ impl Cache {
 }
 
 fn cache_get_error(e: impl std::error::Error) -> ShellError {
-    ShellError::Generic(nu_protocol::shell_error::generic::GenericError::new_internal(
-        format!("Error fetching data from obect store: {e}"),
-        "",
-    ))
+    ShellError::Generic(
+        nu_protocol::shell_error::generic::GenericError::new_internal(
+            format!("Error fetching data from obect store: {e}"),
+            "",
+        ),
+    )
 }

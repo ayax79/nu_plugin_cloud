@@ -156,10 +156,12 @@ async fn liststream_to_cloud(
     }
 
     let _ = write.finish().await.map_err(|e| {
-        ShellError::Generic(nu_protocol::shell_error::generic::GenericError::new_internal(
-            format!("Could not write to S3: {e}"),
-            "",
-        ))
+        ShellError::Generic(
+            nu_protocol::shell_error::generic::GenericError::new_internal(
+                format!("Could not write to S3: {e}"),
+                "",
+            ),
+        )
     })?;
 
     Ok(())
@@ -194,10 +196,12 @@ async fn stream_to_cloud_async(
     let _ = generic_copy(source, &mut write, span, signals)?;
 
     let _ = write.finish().await.map_err(|e| {
-        ShellError::Generic(nu_protocol::shell_error::generic::GenericError::new_internal(
-            format!("Could not write to S3: {e}"),
-            "",
-        ))
+        ShellError::Generic(
+            nu_protocol::shell_error::generic::GenericError::new_internal(
+                format!("Could not write to S3: {e}"),
+                "",
+            ),
+        )
     })?;
 
     Ok(())
@@ -314,10 +318,12 @@ async fn stream_bytes(
         .put(&path, payload)
         .await
         .map_err(|e| {
-            ShellError::Generic(nu_protocol::shell_error::generic::GenericError::new_internal(
-                format!("Could not write to S3: {e}"),
-                "",
-            ))
+            ShellError::Generic(
+                nu_protocol::shell_error::generic::GenericError::new_internal(
+                    format!("Could not write to S3: {e}"),
+                    "",
+                ),
+            )
         })?;
 
     Ok(())

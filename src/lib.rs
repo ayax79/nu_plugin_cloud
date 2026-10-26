@@ -1,3 +1,6 @@
+// nushell plugin APIs return ShellError, which is inherently large.
+#![allow(clippy::result_large_err)]
+
 mod cache;
 mod command;
 mod providers;

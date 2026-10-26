@@ -21,19 +21,16 @@ pub async fn build_object_store(
 
     let parsed_info = parse_url_parts(&url.item);
 
-    let bucket = parsed_info
-        .bucket
-        .clone()
-        .ok_or_else(|| {
-            ShellError::Generic(nu_protocol::shell_error::generic::GenericError::new(
-                format!(
-                    "Could not determine Amazon S3 bucket name from url {}",
-                    url.item
-                ),
-                "",
-                url.span,
-            ))
-        })?;
+    let bucket = parsed_info.bucket.clone().ok_or_else(|| {
+        ShellError::Generic(nu_protocol::shell_error::generic::GenericError::new(
+            format!(
+                "Could not determine Amazon S3 bucket name from url {}",
+                url.item
+            ),
+            "",
+            url.span,
+        ))
+    })?;
 
     let region = if let Some(region) = aws_config
         .region()
