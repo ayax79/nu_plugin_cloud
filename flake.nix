@@ -20,6 +20,18 @@
       outputs = rust-flakes [
         (rust-flake {
           root = ./.;
+          # nixpkgs' cargo setup hook (cargoUseSystemLibs) forces -sys crates
+          # to link system libraries instead of vendored copies
+          # (AWS_LC_SYS_USE_SYSTEM, LIBGIT2_NO_VENDOR,
+          # LIBSQLITE3_SYS_USE_PKG_CONFIG, ...), so they must be found via
+          # pkg-config. libgit2 comes in through nu-command's dev-dependency.
+          deps-build = final: prev: [ final.pkg-config ];
+          deps-run = final: prev: [
+            final.aws-lc
+            final.libgit2
+            final.sqlite
+            final.zlib
+          ];
           # Tests construct object_store/reqwest TLS clients, which load the
           # system CA store when the client is built. The nix build sandbox
           # has no system CA store, so provide one for the test phase.
