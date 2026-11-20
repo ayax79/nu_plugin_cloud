@@ -4131,7 +4131,7 @@ dependencies = [
 
 [[package]]
 name = "nu_plugin_cloud"
-version = "0.2.12+0.117.0"
+version = "0.2.13+0.117.0"
 dependencies = [
  "async-lock",
  "aws-config",
