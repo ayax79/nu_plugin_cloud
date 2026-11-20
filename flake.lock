@@ -19,35 +19,7 @@
     "root": {
       "inputs": {
         "nixpkgs": "nixpkgs",
-        "rust-flake": "rust-flake",
-        "rust-overlay": "rust-overlay",
-        "systems": "systems"
-      }
-    },
-    "rust-flake": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ],
-        "rust-overlay": [
-          "rust-overlay"
-        ],
-        "systems": [
-          "systems"
-        ]
-      },
-      "locked": {
-        "lastModified": 1760236256,
-        "narHash": "sha256-aXqX5AMDCpBZAcp9FixgoU6BnFa9s2/oEIFPUBUHq/Q=",
-        "owner": "KaiSforza",
-        "repo": "rust-flake",
-        "rev": "e3bce783a18eac344753b793f074723b9d600133",
-        "type": "github"
-      },
-      "original": {
-        "owner": "KaiSforza",
-        "repo": "rust-flake",
-        "type": "github"
+        "rust-overlay": "rust-overlay"
       }
     },
     "rust-overlay": {
@@ -69,18 +41,6 @@
         "repo": "rust-overlay",
         "type": "github"
       }
-    },
-    "systems": {
-      "flake": false,
-      "locked": {
-        "path": "./systems.nix",
-        "type": "path"
-      },
-      "original": {
-        "path": "./systems.nix",
-        "type": "path"
-      },
-      "parent": []
     }
   },
   "root": "root",
